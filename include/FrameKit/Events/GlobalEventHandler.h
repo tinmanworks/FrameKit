@@ -3,7 +3,7 @@
 // File         : include/FrameKit/Events/GlobalEventHandler.h
 // Author       : George Gil
 // Created      : 2025-08-12
-// Updated      : 2025-09-06
+// Updated      : 2025-09-07
 // License      : Dual Licensed: GPLv3 or Proprietary (c) 2025 George Gil
 // Description  :
 //      Singleton for routing global events. Provides a single, thread-safe
@@ -25,7 +25,7 @@ namespace FrameKit {
         using EventCallbackFn = std::function<void(Event&)>;
 
         // Access singleton
-        [[nodiscard]] static GlobalEventHandler& Get() noexcept;
+        FK_NODISCARD static GlobalEventHandler& Get() noexcept;
 
         // Install/replace the callback (thread-safe)
         void SetEventCallback(EventCallbackFn callback);

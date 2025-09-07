@@ -1,7 +1,5 @@
 #include "FrameKit/Interface/Input.h"
 
-// TODO: Look into RadarScape for input handling details
-
 namespace FrameKit {
 
     bool Input::IsKeyPressed(KeyCode /*key*/) noexcept {

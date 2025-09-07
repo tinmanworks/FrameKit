@@ -2,8 +2,8 @@
 // Project      : FrameKit
 // File         : src/FrameKit/Events/MouseEvent.cpp
 // Author       : George Gil
-// Created      : 2025-08-12
-// Updated      : 2025-09-06
+// Created      : 2025-09-07
+// Updated      : 2025-09-07
 // License      : Dual Licensed: GPLv3 or Proprietary (c) 2025 George Gil
 // Description  :
 //      Mouse input events: move, scroll, button press/release.

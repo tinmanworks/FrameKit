@@ -3,7 +3,7 @@
 // File         : include/FrameKit/Events/MouseEvent.h
 // Author       : George Gil
 // Created      : 2025-08-12
-// Updated      : 2025-09-06
+// Updated      : 2025-09-07
 // License      : Dual Licensed: GPLv3 or Proprietary (c) 2025 George Gil
 // Description  :
 //      Mouse input events: move, scroll, button press/release.

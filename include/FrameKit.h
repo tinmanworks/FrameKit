@@ -26,8 +26,10 @@
 #include "FKVersion.h"
 
 // FrameKit Core Functionality
+#include "FrameKit/Base/Assert.h"
 #include "FrameKit/Application/Application.h"
 #include "FrameKit/Base/Layer.h"
+
 
 // Debugging and Profiling
 #include "FrameKit/Debug/Log.h"

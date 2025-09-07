@@ -3,21 +3,16 @@
 // File         : include/FrameKit/Events/Event.h
 // Author       : George Gil
 // Created      : 2025-08-11
-// Updated      : 2025-09-06
+// Updated      : 2025-09-07
 // License      : Dual Licensed: GPLv3 or Proprietary (c) 2025 George Gil
-// Description  :
-//             Defines the core Event system for FrameKit, including event
-//             categories, types, base Event interface, and the EventDispatcher
-//             utility for type-safe event handling.
+// Description  : Public event API (types, base class, dispatcher interface).
 // =============================================================================
 
 #pragma once
 
 #include "FrameKit/Base/Base.h"
 
-#include <functional>
 #include <string>
-#include <ostream>
 
 namespace FrameKit
 {
@@ -39,12 +34,12 @@ namespace FrameKit
     enum EventCategory
     {
         None = 0,
-        EventCategoryApplication = FK_BIT(0),
-        EventCategoryInput = FK_BIT(1),
-        EventCategoryKeyboard = FK_BIT(2),
-        EventCategoryMouse = FK_BIT(3),
-        EventCategoryMouseButton = FK_BIT(4),
-        EventCategoryInterprocess = FK_BIT(5)
+        EventCategoryApplication    = FK_BIT(0),
+        EventCategoryInput          = FK_BIT(1),
+        EventCategoryKeyboard       = FK_BIT(2),
+        EventCategoryMouse          = FK_BIT(3),
+        EventCategoryMouseButton    = FK_BIT(4),
+        EventCategoryInterprocess   = FK_BIT(5)
     };
 
 #define EVENT_CLASS_TYPE(type) \
@@ -62,24 +57,20 @@ namespace FrameKit
 
         bool Handled = false;
 
-        [[nodiscard]] virtual EventType GetEventType() const = 0;
-        [[nodiscard]] virtual const char* GetName() const = 0;
-        [[nodiscard]] virtual int GetCategoryFlags() const = 0;
-        [[nodiscard]] virtual std::string ToString() const { return GetName(); }
+        FK_NODISCARD virtual EventType   GetEventType() const = 0;
+        FK_NODISCARD virtual const char* GetName() const = 0;
+        FK_NODISCARD virtual int         GetCategoryFlags() const = 0;
 
-        [[nodiscard]] bool IsInCategory(EventCategory category) const {
-            return (GetCategoryFlags() & category) != 0;
-        }
+        FK_NODISCARD virtual std::string ToString() const;
+
+        FK_NODISCARD bool IsInCategory(EventCategory category) const;
     };
 
     class EventDispatcher
     {
     public:
-        explicit EventDispatcher(Event& event)
-            : m_Event(event) {
-        }
+        explicit EventDispatcher(Event& event);
 
-        // Dispatches an event if it matches the target type T
         template<typename T, typename F>
         bool Dispatch(const F& func) {
             T* castedEvent = dynamic_cast<T*>(&m_Event);
@@ -94,8 +85,7 @@ namespace FrameKit
         Event& m_Event;
     };
 
-    inline std::ostream& operator<<(std::ostream& os, const Event& e) {
-        return os << e.ToString();
-    }
+    std::ostream& operator<<(std::ostream& os, const Event& e);
+
 
 } // namespace FrameKit
