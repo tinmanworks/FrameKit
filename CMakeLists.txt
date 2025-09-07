@@ -103,8 +103,8 @@ if(EXISTS "${FRAMEKIT_ROOT_DIR}/vendor/CMakeLists.txt")
 endif()
 
 # --------------------------------- Sandbox -----------------------------------
-if(BUILD_SANDBOX AND EXISTS "${FRAMEKIT_ROOT_DIR}/sandbox/CMakeLists.txt")
-  add_subdirectory("${FRAMEKIT_ROOT_DIR}/sandbox")
+if(BUILD_SANDBOX AND EXISTS "${FRAMEKIT_ROOT_DIR}/SandBox/CMakeLists.txt")
+  add_subdirectory("${FRAMEKIT_ROOT_DIR}/SandBox")
 endif()
 
 # --------------------------------- Install -----------------------------------
