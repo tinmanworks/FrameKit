@@ -1,0 +1,17 @@
+build/
+build_fk
+_build/
+_build_fk/
+
+result/
+results/
+_result/
+_results/
+
+.idea/
+__pycache__/
+.vscode/
+
+install/
+_install/
+dist/
