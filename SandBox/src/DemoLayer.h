@@ -18,9 +18,11 @@ public:
 		printf("DemoLayer::OnDetach\n");
 	}
 
-	void OnSyncUpdate(double deltaTime) override {
+	void OnSyncUpdate(FrameKit::Timestep ts) override {
 		// Example update logic
-		printf("DemoLayer::OnSyncUpdate - Delta Time: %f\n", deltaTime);
+		static int num = 0;
+		printf("DemoLayer::OnSyncUpdate (%d) - Delta Time: %f\n", num, ts.Seconds());
+		num++;
 	}
 
 	void OnEvent(FrameKit::Event& event) override {

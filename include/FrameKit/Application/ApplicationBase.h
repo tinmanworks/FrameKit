@@ -14,6 +14,7 @@
 #pragma once
 
 #include "FrameKit/Application/AppSpec.h"
+#include "FrameKit/Utilities/Time.h"
 
 #include <mutex>
 
@@ -46,14 +47,14 @@ namespace FrameKit
 		// run-loop hooks (override what you need)
 		virtual void OnBeforePoll() {}
 		virtual void OnAfterPoll() {}
-		virtual void OnBeforeUpdate(double /*deltaTime*/) {}
-		virtual void OnAfterUpdate(double /*deltaTime*/) {}
+		virtual void OnBeforeUpdate(Timestep /*ts*/) {}
+		virtual void OnAfterUpdate(Timestep /*ts*/) {}
 		virtual void OnBeforeRender() {}
 		virtual void OnAfterRender() {}
 		virtual void OnFrameEnd() {}
 
 		// app behavior
-		virtual bool OnUpdate(double /*deltaTime*/) { return true; }	// return false to close app
+		virtual bool OnUpdate(Timestep /*ts*/) { return true; }			// return false to close app
 		virtual void OnRender() {}										// only called in windowed mode
 		virtual void OnEvent(Event& /*e*/) {}							// executed after layers; mark handled to stop propagation
 		virtual void OnUnhandledEvent(Event& /*e*/) {}					// executed if event was unhandled by layers and app

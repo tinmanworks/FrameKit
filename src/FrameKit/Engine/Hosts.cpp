@@ -14,19 +14,12 @@
 
 #include "IAppHost.h"
 #include "FrameKit/Application/Application.h"
+#include "FrameKit/Utilities/Time.h"
 
 #include <chrono>
 #include <thread>
 #include <memory>
-
-namespace 
-{
-inline double NowSec() {
-    using C = std::chrono::steady_clock;
-    return std::chrono::duration<double>(C::now().time_since_epoch()).count();
-}
-inline void SleepSec(double s) { if (s > 0) std::this_thread::sleep_for(std::chrono::duration<double>(s)); }
-}
+#include <iostream>
 
 namespace FrameKit {
 
@@ -55,25 +48,30 @@ namespace FrameKit {
 
     // Shared loop utilities
     struct CommonLoop {
-        double target_dt = 0.0;
-        double last = 0.0;
-        unsigned long long frame = 0;
-        bool closing = false;
+        using steady = std::chrono::steady_clock;
+
+        Timestep                target_dt{};   // 0 => uncapped
+        steady::time_point      frame_start{};
+        Clock                   clock{};       // provides per-frame delta and total
+        unsigned long long      frame = 0;
+        bool                    closing = false;
 
         void SetupTarget(double max_fps) {
-            target_dt = max_fps > 0.0 ? 1.0 / max_fps : 0.0;
-            last = NowSec();
-			frame = 0;
-			closing = false;
+            target_dt = (max_fps > 0.0) ? Timestep(static_cast<float>(1.0 / max_fps)) : Timestep{};
+            frame = 0;
+            closing = false;
+            frame_start = steady::now();
+            // clock constructed with its own start; first Tick() sets a valid delta
         }
 
-        bool PaceAndEndFrame(ApplicationBase& app, double frameStart) {
-            if (target_dt > 0.0) {
-                const double spent = NowSec() - frameStart;
-                if (spent < target_dt) { SleepSec(target_dt - spent); }
+        bool PaceAndEndFrame(ApplicationBase& app) {
+            if (target_dt.Seconds() > 0.0f) {
+                auto spent = Timestep(std::chrono::duration<float>(steady::now() - frame_start));
+                auto remain = target_dt - spent;
+                if (remain.Seconds() > 0.0f) Sleep(remain);
             }
             ++frame;
-			app.OnFrameEnd();
+            app.OnFrameEnd();
             return !closing;
         }
     };
@@ -86,8 +84,7 @@ namespace FrameKit {
     public:
         bool Init(ApplicationBase& app) override {
             const auto& spec = app.GetSpec();
-            // TODO: Add max FPS to spec, pass it here. For now: uncapped.
-            loop_.SetupTarget(0.0);
+            loop_.SetupTarget(0.0); // uncapped for now; wire max FPS from spec later
             win_ = MakeWindow(1280, 720, spec.VSync);
             return app.Init();
         }
@@ -103,13 +100,13 @@ namespace FrameKit {
             }
             app.OnAfterPoll();
 
-            const double t0 = NowSec();
-            double dt = t0 - loop_.last;
-            loop_.last = t0;
-
-            app.OnBeforeUpdate(dt);
-            if (!app.OnUpdate(dt)) { loop_.closing = true; }
-            app.OnAfterUpdate(dt);
+            loop_.frame_start = CommonLoop::steady::now();
+            loop_.clock.Tick();                         // updates internal delta/elapsed
+            Timestep ts = loop_.clock.Delta();
+			ts = (ts.Seconds() > 0.0f) ? ts : Timestep(1.0f / 60.0f); // clamp to 60 FPS min
+            app.OnBeforeUpdate(ts);
+            if (!app.OnUpdate(ts)) { loop_.closing = true; }
+            app.OnAfterUpdate(ts);
 
             if (!loop_.closing) {
                 app.OnBeforeRender();
@@ -118,9 +115,10 @@ namespace FrameKit {
                 if (win_) win_->Swap();
             }
 
-			stats_.dt = dt;
-			stats_.frame = loop_.frame + 1; // next frame index
-			return loop_.PaceAndEndFrame(app, t0);
+			stats_.ts = ts.Seconds();                   // keep HostStats as seconds scalar
+            stats_.frame = loop_.frame + 1;             // next frame index
+            
+            return loop_.PaceAndEndFrame(app);
         }
 
         void SignalClose() override { loop_.closing = true; if (win_) win_->RequestClose(); }
@@ -143,18 +141,18 @@ namespace FrameKit {
             app.OnBeforePoll();
             app.OnAfterPoll();
 
-            const double t0 = NowSec();
-            double dt = t0 - loop_.last;
-            loop_.last = t0;
+            loop_.frame_start = CommonLoop::steady::now();
+            loop_.clock.Tick();
+            Timestep ts = loop_.clock.Delta();
 
-            app.OnBeforeUpdate(dt);
-            if (!app.OnUpdate(dt)) { loop_.closing = true; }
-            app.OnAfterUpdate(dt);
+            app.OnBeforeUpdate(ts);
+            if (!app.OnUpdate(ts)) { loop_.closing = true; }
+            app.OnAfterUpdate(ts);
+            
+            stats_.ts = ts.Seconds();
+            stats_.frame = loop_.frame + 1;
 
-			stats_.dt = dt;
-			stats_.frame = loop_.frame + 1; // next frame index
-
-			return loop_.PaceAndEndFrame(app, t0);
+			return loop_.PaceAndEndFrame(app);
         }
 
         void SignalClose() override { loop_.closing = true; }

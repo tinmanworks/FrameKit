@@ -14,13 +14,13 @@
 
 
 namespace FrameKit {
-	bool Application::OnUpdate(double dt) {
+	bool Application::OnUpdate(Timestep ts) {
 		// Default: update all layers
 		std::scoped_lock<std::mutex> lock(m_LayerStackMutex);
 		if (m_LayerStack) {
 			for (Layer* layer : *m_LayerStack) {
 				if (layer) {
-					layer->OnSyncUpdate(dt);
+					layer->OnSyncUpdate(ts);
 				}
 			}
 		}

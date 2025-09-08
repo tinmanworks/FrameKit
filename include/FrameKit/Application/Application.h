@@ -14,6 +14,7 @@
 #pragma once
 
 #include "FrameKit/Application/ApplicationBase.h"
+#include "FrameKit/Utilities/Time.h"
 
 namespace FrameKit {
     class Application : public ApplicationBase {
@@ -29,7 +30,7 @@ namespace FrameKit {
 		// sensible defaults; override as needed
 		// NOTE: override only if you need to customise the execution loop
 		// NOTE: Override only if you know what you are doing!
-		bool OnUpdate(double /*deltaTime*/) override;
+		bool OnUpdate(Timestep /*ts*/) override;
 		void OnRender() override;// only called in windowed mode
 		void OnEvent(Event& /*e*/) override;
 

@@ -20,7 +20,7 @@
 namespace FrameKit {
     class ApplicationBase;
 
-    struct HostStats { double dt = 0.0; unsigned long long frame = 0; };
+    struct HostStats { double ts = 0.0; unsigned long long frame = 0; };
 
     struct IAppHost {
         virtual ~IAppHost() = default;
