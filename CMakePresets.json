@@ -10,7 +10,7 @@
       "cacheVariables": {
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
         "CMAKE_INSTALL_PREFIX": "${sourceDir}/_install/${presetName}/FrameKit",
-        "BUILD_SANDBOX": "OFF"
+        "BUILD_SANDBOX": "ON"
       }
     },
 

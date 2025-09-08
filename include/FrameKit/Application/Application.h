@@ -3,7 +3,7 @@
 // File         : include/FrameKit/Application/Application.h
 // Author       : George Gil
 // Created      : 2025-09-07
-// Updated      : 2025-09-07
+// Updated      : 2025-09-08
 // License      : Dual Licensed: GPLv3 or Proprietary (c) 2025 George Gil
 // Description  :
 //      Defines the Application class for the FrameKit framework. Inherits from
@@ -13,36 +13,24 @@
 
 #pragma once
 
+#include "FrameKit/Application/ApplicationBase.h"
+
 namespace FrameKit {
-
-    struct ApplicationCommandLineArgs {
-        int Count = 0;
-        char** Args = nullptr;
-
-        ApplicationCommandLineArgs() = default;
-
-        ApplicationCommandLineArgs(int count, char** args)
-            : Count(count), Args(args) {}
-    };
-
-    class Application {
+    class Application : public ApplicationBase {
     public:
         Application() = default;
-        virtual ~Application() = default;
+        explicit Application(const ApplicationSpecification& spec) : ApplicationBase(spec) {}
+        ~Application() override = default;
 
-        // Initialize the application. Return true on success.
-        virtual bool Init(const ApplicationCommandLineArgs& args) { return true; }
-
-        // Shutdown and cleanup resources.
-        virtual void Shutdown() {}
-
-        // Main update loop. Called every frame.
-        virtual void Update(float deltaTime) {}
-
-        // Handle application-specific events.
-        virtual void OnEvent(int eventType, void* eventData) {}
+		// sensible defaults; override as needed
+        bool Init() override { return true; }
+		void Shutdown() override {}
+        bool OnUpdate(double /*deltaTime*/) override { return false; }
+		void OnRender() override {}
+		void OnEvent(Event& /*e*/) override {}
     };
 
     // Client must implement this to create their application instance.
     Application* CreateApplication(ApplicationCommandLineArgs args);
+
 } // namespace FrameKit

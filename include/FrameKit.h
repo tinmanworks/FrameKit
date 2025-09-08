@@ -14,7 +14,7 @@
 // File         : include/FrameKit.h
 // Author       : George Gil
 // Created      : 2025-09-07
-// Updated      : 2025-09-07
+// Updated      : 2025-09-08
 // License      : Dual Licensed: GPLv3 or Proprietary (c) 2025 George Gil
 // Description  :
 //      Main include file for the FrameKit framework.
@@ -27,5 +27,9 @@
 #include "FrameKit/Version.h"
 
 // FrameKit Core Functionality
+#include "FrameKit/Application/Application.h"
+
+
 // Debugging and Profiling
+
 // FrameKit Utilities
