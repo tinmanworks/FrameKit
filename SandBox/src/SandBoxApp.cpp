@@ -1,39 +1,36 @@
 
 #include "FrameKit/Application/Application.h"
 
+#include "DemoLayer.h"
+
 #include <iostream>
 
 namespace SandBox {
 
     class SandBoxApp : public FrameKit::Application {
     public:
-        SandBoxApp() = default;
-        ~SandBoxApp() override = default;
+        explicit SandBoxApp(const FrameKit::ApplicationSpecification& spec)
+            : FrameKit::Application(spec) {}
 
         bool Init() override {
-            // Initialization code here
+			printf("SandBoxApp::Init\n");
+			PushLayer(new DemoLayer("DemoLayer"));
             return true;
         }
 
         void Shutdown() override {
-            // Cleanup code here
-        }
-
-        bool OnUpdate(double deltaTime) override {
-            // Main update loop code here
-            printf("OnUpdate::DeltaTime -> ");
-			printf("%f\n", deltaTime);
-
-			return true; // Return false to close the application
-        }
-
-        void OnEvent(FrameKit::Event& e) override {
-            // Event handling code here
+			printf("SandBoxApp::Shutdown\n");\
         }
     };
 
 }
 
 FrameKit::Application* FrameKit::CreateApplication(FrameKit::ApplicationCommandLineArgs args) {
-    return new SandBox::SandBoxApp();
+
+    ApplicationSpecification spec;
+	spec.Name = "SandBoxApp";
+	spec.CommandLineArgs = args;
+	spec.AppMode = FrameKit::AppMode::Windowed;
+
+    return new SandBox::SandBoxApp(spec);
 }

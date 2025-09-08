@@ -12,8 +12,30 @@
 // =============================================================================
 
 #include "FrameKit/Application/ApplicationBase.h"
+#include "FrameKit/Engine/Layer.h"
+#include "FrameKit/Engine/LayerStack.h"
 
 namespace FrameKit {
+
+	ApplicationBase::ApplicationBase() : ApplicationBase(ApplicationSpecification()) {}
+	
+	ApplicationBase::ApplicationBase(const ApplicationSpecification& spec) : m_Specification(spec) { m_LayerStack = new LayerStack(); }
+
+	void ApplicationBase::PushLayer(Layer* layer) {
+		std::scoped_lock<std::mutex> lock(m_LayerStackMutex);
+		if (m_LayerStack) {
+			m_LayerStack->PushLayer(layer);
+			layer->OnAttach();
+		}
+	}
+
+	void ApplicationBase::PushOverlay(Layer* layer) {
+		std::scoped_lock<std::mutex> lock(m_LayerStackMutex);
+		if (m_LayerStack) {
+			m_LayerStack->PushOverlay(layer);
+			layer->OnAttach();
+		}
+	}
 
 
 

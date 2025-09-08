@@ -22,12 +22,26 @@ namespace FrameKit {
         explicit Application(const ApplicationSpecification& spec) : ApplicationBase(spec) {}
         ~Application() override = default;
 
-		// sensible defaults; override as needed
+		// Lifecycle - Can be implemented by the client application
         bool Init() override { return true; }
 		void Shutdown() override {}
-        bool OnUpdate(double /*deltaTime*/) override { return false; }
-		void OnRender() override {}
-		void OnEvent(Event& /*e*/) override {}
+		
+		// sensible defaults; override as needed
+		// NOTE: override only if you need to customise the execution loop
+		// NOTE: Override only if you know what you are doing!
+		bool OnUpdate(double /*deltaTime*/) override;
+		void OnRender() override;// only called in windowed mode
+		void OnEvent(Event& /*e*/) override;
+
+		// For more advanced usage, override these hooks as needed:
+		// void OnBeforePoll() override {}
+		// void OnAfterPoll() override {}
+		// void OnBeforeUpdate(double /*deltaTime*/) override {}
+		// void OnAfterUpdate(double /*deltaTime*/) override {}
+		// void OnBeforeRender() override {}
+		// void OnAfterRender() override {}
+		// void OnFrameEnd() override {}
+		// void OnUnhandledEvent(Event& /*e*/) override {}
     };
 
     // Client must implement this to create their application instance.

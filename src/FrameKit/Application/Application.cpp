@@ -8,3 +8,49 @@
 // Description  :
 //      
 // =============================================================================
+
+#include "FrameKit/Application/Application.h"
+#include "FrameKit/Engine/LayerStack.h"
+
+
+namespace FrameKit {
+	bool Application::OnUpdate(double dt) {
+		// Default: update all layers
+		std::scoped_lock<std::mutex> lock(m_LayerStackMutex);
+		if (m_LayerStack) {
+			for (Layer* layer : *m_LayerStack) {
+				if (layer) {
+					layer->OnSyncUpdate(dt);
+				}
+			}
+		}
+		return true; // Return false to close the application
+	}
+
+	void Application::OnRender() {
+		// Default: render all layers
+		std::scoped_lock<std::mutex> lock(m_LayerStackMutex);
+		if (m_LayerStack) {
+			for (Layer* layer : *m_LayerStack) {
+				if (layer) {
+					layer->OnRender();
+				}
+			}
+		}
+	}
+
+	void Application::OnEvent(Event& e) {
+		// Default: propagate to layers in reverse order
+		std::scoped_lock<std::mutex> lock(m_LayerStackMutex);
+		if (m_LayerStack) {
+			for (auto it = m_LayerStack->rbegin(); it != m_LayerStack->rend(); ++it) {
+				Layer* layer = *it;
+				if (layer) {
+					layer->OnEvent(e);
+					//if (e.Handled) break;
+					break; // For now, do not propagate to multiple layers
+				}
+			}
+		}
+	}
+}

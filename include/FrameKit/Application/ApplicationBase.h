@@ -15,16 +15,20 @@
 
 #include "FrameKit/Application/AppSpec.h"
 
+#include <mutex>
+
 namespace FrameKit
 {
 	// forward declarations
 	class Event;
+	class Layer;
+	class LayerStack;
 
 	// ---------- Application Base Class ----------
 	class ApplicationBase {
 	public:
-		ApplicationBase() = default;
-		explicit ApplicationBase(const ApplicationSpecification& spec) : m_Specification(spec) {};
+		ApplicationBase();
+		explicit ApplicationBase(const ApplicationSpecification& spec);
 		virtual ~ApplicationBase() = default;
 
 		ApplicationBase(const ApplicationBase&) = delete;
@@ -54,7 +58,15 @@ namespace FrameKit
 		virtual void OnEvent(Event& /*e*/) {}							// executed after layers; mark handled to stop propagation
 		virtual void OnUnhandledEvent(Event& /*e*/) {}					// executed if event was unhandled by layers and app
 
-	private:
-		ApplicationSpecification m_Specification;
+		// --- Runtime layer management ---
+		void PushLayer(Layer* layer);
+		void PushOverlay(Layer* layer);
+
+	protected:
+		ApplicationSpecification	m_Specification;
+		LayerStack*					m_LayerStack = nullptr; 
+		std::mutex					m_LayerStackMutex;
+
+	private: 
 	};
 }
