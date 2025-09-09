@@ -3,7 +3,7 @@
 // File         : src/FrameKit/Engine/LayerStack.h
 // Author       : George Gil
 // Created      : 2025-09-08
-// Updated      : 2025-09-08
+// Updated      : 2025-09-09
 // License      : Dual Licensed: GPLv3 or Proprietary (c) 2025 George Gil
 // Description  : 
 //      Container for managing engine layers and overlays. Owns Layer* pointers:

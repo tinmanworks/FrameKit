@@ -11,17 +11,17 @@ public:
 		: FrameKit::Layer(name) {}
 
 	void OnAttach() override {
-		printf("DemoLayer::OnAttach\n");
+		FK_INFO("DemoLayer Attached");
 	}
 
 	void OnDetach() override {
-		printf("DemoLayer::OnDetach\n");
+		FK_INFO("DemoLayer Detached");
 	}
 
 	void OnSyncUpdate(FrameKit::Timestep ts) override {
 		// Example update logic
 		static int num = 0;
-		printf("DemoLayer::OnSyncUpdate (%d) - Delta Time: %f\n", num, ts.Seconds());
+		FK_CRITICAL("DemoLayer::OnSyncUpdate {} - Delta Time: {}", num, ts.Seconds());
 		num++;
 	}
 
