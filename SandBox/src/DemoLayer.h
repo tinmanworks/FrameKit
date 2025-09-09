@@ -11,15 +11,19 @@ public:
 		: FrameKit::Layer(name) {}
 
 	void OnAttach() override {
+		FK_PROFILE_FUNCTION();
 		FK_INFO("DemoLayer Attached");
 	}
 
 	void OnDetach() override {
+		FK_PROFILE_FUNCTION();
+
 		FK_INFO("DemoLayer Detached");
 	}
 
 	void OnSyncUpdate(FrameKit::Timestep ts) override {
 		// Example update logic
+		FK_PROFILE_FUNCTION();
 		static int num = 0;
 		FK_CRITICAL("DemoLayer::OnSyncUpdate {} - Delta Time: {}", num, ts.Seconds());
 		num++;

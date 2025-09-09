@@ -11,6 +11,7 @@
 // =============================================================================
 #include "FrameKit/Application/Application.h"
 #include "FrameKit/Engine/Engine.h"
+#include "FrameKit/Debug/Instrumentor.h"
 
 #include <exception>
 #include <iostream>
@@ -19,6 +20,8 @@
 extern FrameKit::Application* FrameKit::CreateApplication(FrameKit::ApplicationCommandLineArgs args);
 
 int main(int argc, char** argv) {
+    FK_PROFILE_BEGIN_SESSION("Startup", "FrameKitProfile.json");
+
     try {
         FrameKit::ApplicationCommandLineArgs args{ argc, argv };
 
@@ -45,4 +48,5 @@ int main(int argc, char** argv) {
         std::cerr << "Unhandled unknown exception." << std::endl;
         return EXIT_FAILURE;
     }
+    FK_PROFILE_END_SESSION();
 }

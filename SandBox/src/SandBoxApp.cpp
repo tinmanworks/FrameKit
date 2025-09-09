@@ -1,6 +1,7 @@
 
 #include "FrameKit/Application/Application.h"
 #include "FrameKit/Debug/Log.h"
+#include "FrameKit/Debug/Instrumentor.h"
 
 #include "DemoLayer.h"
 
@@ -14,6 +15,7 @@ namespace SandBox {
             : FrameKit::Application(spec) {}
 
         bool Init() override {
+			FK_PROFILE_FUNCTION();
 			FrameKit::Log::InitClient("SandBoxApp");
 			PushLayer(new DemoLayer("DemoLayer"));
 			FK_INFO("SandBoxApp Initialized");
