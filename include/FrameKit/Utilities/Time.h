@@ -10,6 +10,8 @@
 
 #pragma once
 
+#include "FrameKit/Engine/Defines.h"
+
 #include <chrono>
 
 namespace FrameKit {
@@ -26,8 +28,8 @@ namespace FrameKit {
         static constexpr Timestep FromMilliseconds(float ms) noexcept { return Timestep(ms * 0.001f); }
 
         // Queries
-        [[nodiscard]] constexpr float Seconds() const noexcept { return m_Time; }
-        [[nodiscard]] constexpr float Milliseconds() const noexcept { return m_Time * 1000.0f; }
+        FK_NODISCARD constexpr float Seconds() const noexcept { return m_Time; }
+        FK_NODISCARD constexpr float Milliseconds() const noexcept { return m_Time * 1000.0f; }
 
         // Backward-compat
         constexpr operator float() const noexcept { return m_Time; }
@@ -54,8 +56,8 @@ namespace FrameKit {
         Timer() noexcept;
 
         void Reset() noexcept;
-        [[nodiscard]] Timestep Elapsed() const noexcept;
-        [[nodiscard]] Timestep Restart() noexcept;
+        FK_NODISCARD Timestep Elapsed() const noexcept;
+        FK_NODISCARD Timestep Restart() noexcept;
 
     private:
         time_point m_start;
@@ -72,9 +74,9 @@ namespace FrameKit {
         void Tick() noexcept;          // updates Delta() and Elapsed()
         void Pause(bool p) noexcept;   // freeze delta while paused
 
-        [[nodiscard]] bool     Paused()  const noexcept;
-        [[nodiscard]] Timestep Delta()   const noexcept;  // last Tick delta
-        [[nodiscard]] Timestep Elapsed() const noexcept;  // since creation
+        FK_NODISCARD bool     Paused()  const noexcept;
+        FK_NODISCARD Timestep Delta()   const noexcept;  // last Tick delta
+        FK_NODISCARD Timestep Elapsed() const noexcept;  // since creation
 
     private:
         time_point m_start;

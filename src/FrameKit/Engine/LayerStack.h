@@ -40,16 +40,16 @@ namespace FrameKit
         void PopOverlay(Layer* overlay);
 
         // Iteration (non-const)
-        [[nodiscard]] std::vector<Layer*>::iterator begin() noexcept { return m_Layers.begin(); }
-        [[nodiscard]] std::vector<Layer*>::iterator end()   noexcept { return m_Layers.end(); }
-        [[nodiscard]] std::vector<Layer*>::reverse_iterator rbegin() noexcept { return m_Layers.rbegin(); }
-        [[nodiscard]] std::vector<Layer*>::reverse_iterator rend()   noexcept { return m_Layers.rend(); }
+        FK_NODISCARD std::vector<Layer*>::iterator begin() noexcept { return m_Layers.begin(); }
+        FK_NODISCARD std::vector<Layer*>::iterator end()   noexcept { return m_Layers.end(); }
+        FK_NODISCARD std::vector<Layer*>::reverse_iterator rbegin() noexcept { return m_Layers.rbegin(); }
+        FK_NODISCARD std::vector<Layer*>::reverse_iterator rend()   noexcept { return m_Layers.rend(); }
 
         // Iteration (const)
-        [[nodiscard]] std::vector<Layer*>::const_iterator begin() const noexcept { return m_Layers.begin(); }
-        [[nodiscard]] std::vector<Layer*>::const_iterator end()   const noexcept { return m_Layers.end(); }
-        [[nodiscard]] std::vector<Layer*>::const_reverse_iterator rbegin() const noexcept { return m_Layers.rbegin(); }
-        [[nodiscard]] std::vector<Layer*>::const_reverse_iterator rend()   const noexcept { return m_Layers.rend(); }
+        FK_NODISCARD std::vector<Layer*>::const_iterator begin() const noexcept { return m_Layers.begin(); }
+        FK_NODISCARD std::vector<Layer*>::const_iterator end()   const noexcept { return m_Layers.end(); }
+        FK_NODISCARD std::vector<Layer*>::const_reverse_iterator rbegin() const noexcept { return m_Layers.rbegin(); }
+        FK_NODISCARD std::vector<Layer*>::const_reverse_iterator rend()   const noexcept { return m_Layers.rend(); }
 
     private:
         std::vector<Layer*> m_Layers;

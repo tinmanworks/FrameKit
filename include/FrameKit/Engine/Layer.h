@@ -12,6 +12,7 @@
 
 #pragma once
 
+#include "FrameKit/Engine/Defines.h"
 #include "FrameKit/Utilities/Time.h"
 
 #include <string>
@@ -47,7 +48,7 @@ namespace FrameKit
 		// Event handling
         virtual void OnEvent(Event& event) {}
 
-        [[nodiscard]] const std::string& GetName() const noexcept { return m_DebugName; }
+        FK_NODISCARD const std::string& GetName() const noexcept { return m_DebugName; }
 
     protected:
         std::string m_DebugName;
