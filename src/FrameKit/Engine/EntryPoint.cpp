@@ -3,7 +3,7 @@
 // File         : src/FrameKit/Core/EntryPoint.cpp
 // Author       : George Gil
 // Created      : 2025-09-07
-// Updated      : 2025-09-08
+// Updated      : 2025-09-09
 // License      : Dual Licensed: GPLv3 or Proprietary (c) 2025 George Gil
 // Description  :
 //   Entry point for FrameKit applications. Initializes the application,
@@ -20,7 +20,9 @@
 extern FrameKit::Application* FrameKit::CreateApplication(FrameKit::ApplicationCommandLineArgs args);
 
 int main(int argc, char** argv) {
+#if FK_PROFILE
     FK_PROFILE_BEGIN_SESSION("Startup", "FrameKitProfile.json");
+#endif
 
     try {
         FrameKit::ApplicationCommandLineArgs args{ argc, argv };
@@ -48,5 +50,8 @@ int main(int argc, char** argv) {
         std::cerr << "Unhandled unknown exception." << std::endl;
         return EXIT_FAILURE;
     }
+#if FK_PROFILE
     FK_PROFILE_END_SESSION();
+#endif
+    return 0;
 }

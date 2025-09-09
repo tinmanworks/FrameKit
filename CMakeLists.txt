@@ -97,6 +97,13 @@ else()
   target_compile_definitions(FrameKit PUBLIC CMAKE_PLATFORM_32_BIT=1)
 endif()
 
+# ---------------------------- Profiling Option ------------------------------
+# Define FK_PROFILE for FrameKit sources when in Debug Configuration
+target_compile_definitions(FrameKit
+  PUBLIC
+    $<$<CONFIG:Debug>:FK_PROFILE=1>
+    $<$<NOT:$<CONFIG:Debug>>:FK_PROFILE=0>)
+
 # --------------------------------- Vendor ------------------------------------
 if(EXISTS "${FRAMEKIT_ROOT_DIR}/vendor/CMakeLists.txt")
   add_subdirectory("${FRAMEKIT_ROOT_DIR}/vendor")
