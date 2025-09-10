@@ -65,6 +65,9 @@ target_compile_definitions(FrameKit PUBLIC
   $<$<CONFIG:Debug>:FK_PROFILE=1>
   $<$<NOT:$<CONFIG:Debug>>:FK_PROFILE=0>)
 
+# -------- Domains (Window, Audio, Gfx, …) --------
+add_subdirectory("${FRAMEKIT_SRC_DIR}/FrameKit/Domains")
+
 # Install core + headers
 include(GNUInstallDirs)
 install(TARGETS FrameKit
@@ -74,9 +77,6 @@ install(TARGETS FrameKit
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
   INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install(DIRECTORY "${FRAMEKIT_INCLUDE_DIR}/" DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-
-# -------- Domains (Window, Audio, Gfx, …) --------
-add_subdirectory("${FRAMEKIT_SRC_DIR}/FrameKit/Domains")
 
 # Export everything (core + domains)
 install(EXPORT FrameKitTargets

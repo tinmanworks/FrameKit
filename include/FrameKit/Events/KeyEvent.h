@@ -11,6 +11,7 @@
 #pragma once
 
 #include "FrameKit/Events/Event.h"
+#include "FrameKit/Input/KeyCodes.h"
 
 #include <string>
 
@@ -18,39 +19,27 @@ namespace FrameKit {
 
 class KeyEvent : public Event {
 public:
-    int GetKeyCode()   const { return m_KeyCode; }   // virtual-key or GLFW key
-    int GetScanCode()  const { return m_ScanCode; }  // hardware scancode when available
-    int GetMods()      const { return m_Mods; }      // bitmask from backend (e.g. shift/ctrl/alt/super)
+    KeyCode GetKeyCode() const { return m_Key; }
+    int     GetScanCode() const { return m_Scan; }
+    int     GetMods()     const { return m_Mods; }
     EVENT_CLASS_CATEGORY(EventCategoryKeyboard | EventCategoryInput)
 protected:
-    KeyEvent(int key, int sc, int mods) : m_KeyCode(key), m_ScanCode(sc), m_Mods(mods) {}
-    int m_KeyCode, m_ScanCode, m_Mods;
+    KeyEvent(KeyCode key, int sc, int mods) : m_Key(key), m_Scan(sc), m_Mods(mods) {}
+    KeyCode m_Key; int m_Scan; int m_Mods;
 };
 
 class KeyPressedEvent final : public KeyEvent {
 public:
-    KeyPressedEvent(int key, int sc, int mods, bool repeat)
-        : KeyEvent(key, sc, mods), m_Repeat(repeat) {}
-    bool IsRepeat() const { return m_Repeat; }
-    std::string ToString() const override {
-        return "KeyPressed: key=" + std::to_string(GetKeyCode()) +
-               " sc=" + std::to_string(GetScanCode()) +
-               " mods=" + std::to_string(GetMods()) +
-               (m_Repeat ? " (repeat)" : "");
-    }
+    KeyPressedEvent(KeyCode key, int sc, int mods, bool repeat)
+      : KeyEvent(key, sc, mods), m_Repeat(repeat) {}
     EVENT_CLASS_TYPE(KeyPressed)
-private:
-    bool m_Repeat;
+    bool IsRepeat() const { return m_Repeat; }
+private: bool m_Repeat;
 };
 
 class KeyReleasedEvent final : public KeyEvent {
 public:
-    KeyReleasedEvent(int key, int sc, int mods) : KeyEvent(key, sc, mods) {}
-    std::string ToString() const override {
-        return "KeyReleased: key=" + std::to_string(GetKeyCode()) +
-               " sc=" + std::to_string(GetScanCode()) +
-               " mods=" + std::to_string(GetMods());
-    }
+    KeyReleasedEvent(KeyCode key, int sc, int mods) : KeyEvent(key, sc, mods) {}
     EVENT_CLASS_TYPE(KeyReleased)
 };
 

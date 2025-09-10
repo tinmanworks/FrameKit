@@ -12,11 +12,12 @@ namespace SandBox {
     class SandBoxApp : public FrameKit::Application {
     public:
         explicit SandBoxApp(const FrameKit::ApplicationSpecification& spec)
-            : FrameKit::Application(spec) {}
+            : FrameKit::Application(spec) {
+            FrameKit::Log::InitClient("SandBoxApp");
+        }
 
         bool Init() override {
 			FK_PROFILE_FUNCTION();
-			FrameKit::Log::InitClient("SandBoxApp");
 			PushLayer(new DemoLayer("DemoLayer"));
 			FK_INFO("SandBoxApp Initialized");
             return true;

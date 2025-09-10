@@ -8,8 +8,14 @@ function(framekit_add_backend)
     PUBLIC  FrameKit.${B_DOMAIN}Runtime FrameKit.${B_DOMAIN}API ${B_PUBLIC_LIBS}
     PRIVATE ${B_PRIVATE_LIBS})
   if(B_PUBLIC_DEFINES) 
-    target_compile_definitions(${B_TARGET} PUBLIC ${B_PUBLIC_DEFINES}) 
+    target_compile_definitions(FrameKit.${B_DOMAIN}Runtime PUBLIC ${B_PUBLIC_DEFINES}) 
   endif()
+
+  target_link_libraries(FrameKit 
+      PUBLIC
+      ${B_TARGET}
+      FrameKit.${B_DOMAIN}Runtime
+      )
 
   # default folder
   if(NOT B_FOLDER)

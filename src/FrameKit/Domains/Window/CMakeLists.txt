@@ -34,7 +34,8 @@ target_sources(FrameKit.WindowAPI INTERFACE
 # -------- Runtime (registry + loader) --------
 add_library(FrameKit.WindowRuntime STATIC
   "${FRAMEKIT_WINDOW_DOMAIN_DIR}/Runtime/WindowRegistry.cpp"
-  "${FRAMEKIT_WINDOW_DOMAIN_DIR}/Runtime/WindowPluginLoader.cpp")
+  "${FRAMEKIT_WINDOW_DOMAIN_DIR}/Runtime/WindowPluginLoader.cpp"
+  "${FRAMEKIT_WINDOW_DOMAIN_DIR}/Runtime/WindowBuiltins.cpp")
 add_library(FrameKit::WindowRuntime ALIAS FrameKit.WindowRuntime)
 
 target_link_libraries(FrameKit.WindowRuntime PUBLIC FrameKit.WindowAPI)
@@ -50,6 +51,9 @@ set_target_properties(FrameKit.WindowRuntime PROPERTIES FOLDER "FrameKit")
 #   "${FRAMEKIT_WINDOW_DOMAIN_DIR}/Runtime/WindowRegistry.cpp"
 #   "${FRAMEKIT_WINDOW_DOMAIN_DIR}/Runtime/WindowPluginLoader.cpp")
 
+# -------- Backends --------
+add_subdirectory(Backends)
+
 # -------- Install --------
 install(TARGETS
   FrameKit.WindowAPI
@@ -64,7 +68,3 @@ install(TARGETS
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
   INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-
-
-# -------- Backends --------
-add_subdirectory(Backends)

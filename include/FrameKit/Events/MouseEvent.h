@@ -2,7 +2,6 @@
 // Project      : FrameKit
 // File         : include/FrameKit/Events/MouseEvent.h
 // Author       : George Gil
-// Created      : 2025-09-10
 // Updated      : 2025-09-10
 // License      : Dual Licensed: GPLv3 or Proprietary (c) 2025 George Gil
 // Description  : Mouse input events
@@ -11,6 +10,8 @@
 #pragma once
 
 #include "FrameKit/Events/Event.h"
+#include "FrameKit/Input/MouseCodes.h"
+#include <string>
 
 namespace FrameKit {
 
@@ -44,28 +45,24 @@ private:
 
 class MouseButtonEvent : public Event {
 public:
-    int GetButton() const { return m_Button; }
+    MouseCode GetButton() const { return m_Button; }
     EVENT_CLASS_CATEGORY(EventCategoryMouse | EventCategoryInput | EventCategoryMouseButton)
 protected:
-    explicit MouseButtonEvent(int button) : m_Button(button) {}
-    int m_Button;
+    explicit MouseButtonEvent(MouseCode b) : m_Button(b) {}
+    MouseCode m_Button;
 };
 
 class MouseButtonPressedEvent final : public MouseButtonEvent {
 public:
-    explicit MouseButtonPressedEvent(int button) : MouseButtonEvent(button) {}
-    std::string ToString() const override {
-        return "MouseButtonPressed: " + std::to_string(GetButton());
-    }
+    explicit MouseButtonPressedEvent(MouseCode b) : MouseButtonEvent(b) {}
+    std::string ToString() const override { return "MouseButtonPressed: " + std::to_string((int)GetButton()); }
     EVENT_CLASS_TYPE(MouseButtonPressed)
 };
 
 class MouseButtonReleasedEvent final : public MouseButtonEvent {
 public:
-    explicit MouseButtonReleasedEvent(int button) : MouseButtonEvent(button) {}
-    std::string ToString() const override {
-        return "MouseButtonReleased: " + std::to_string(GetButton());
-    }
+    explicit MouseButtonReleasedEvent(MouseCode b) : MouseButtonEvent(b) {}
+    std::string ToString() const override { return "MouseButtonReleased: " + std::to_string((int)GetButton()); }
     EVENT_CLASS_TYPE(MouseButtonReleased)
 };
 

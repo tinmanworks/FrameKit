@@ -11,10 +11,12 @@
 //      the main run loop, and shutdown. They handle platform-specific details
 // =============================================================================
 
-
 #include "IAppHost.h"
 #include "FrameKit/Application/Application.h"
 #include "FrameKit/Utilities/Time.h"
+#include "FrameKit/Window/Window.h"
+#include "FrameKit/Debug/Log.h"
+#include "FrameKit/Window/WindowBuiltins.h"
 
 #include <chrono>
 #include <thread>
@@ -22,29 +24,11 @@
 #include <iostream>
 
 namespace FrameKit {
-
-    // Minimal internal window port (no public exposure)
-    struct IWindow {
-        virtual ~IWindow() = default;
-        virtual bool Pump() = 0;           // false => close requested
-        virtual void Swap() = 0;
-        virtual void RequestClose() = 0;
-        virtual unsigned Width()  const = 0;
-        virtual unsigned Height() const = 0;
-    };
-
-    struct NullWindow final : IWindow {
-        bool Pump() override { return true; }
-        void Swap() override {}
-        void RequestClose() override {}
-        unsigned Width()  const override { return 0; }
-        unsigned Height() const override { return 0; }
-    };
-
-    // TODO: replace with real platform backend
-    static std::unique_ptr<IWindow> MakeWindow(unsigned, unsigned, bool) {
-        return std::make_unique<NullWindow>();
-    }
+    // use the real window system
+    using FrameKit::IWindow;
+    using FrameKit::WindowPtr;
+    
+    static void NoopDelete(IWindow*) noexcept {}
 
     // Shared loop utilities
     struct CommonLoop {
@@ -78,14 +62,38 @@ namespace FrameKit {
 
     // ---------------- Windowed host ----------------
     class WindowedHost final : public IAppHost {
-        std::unique_ptr<IWindow> win_;
+        WindowPtr win_{ nullptr, &NoopDelete };
         CommonLoop loop_;
         HostStats stats_{};
     public:
         bool Init(ApplicationBase& app) override {
             const auto& spec = app.GetSpec();
             loop_.SetupTarget(0.0); // uncapped for now; wire max FPS from spec later
-            win_ = MakeWindow(1280, 720, spec.VSync);
+
+            RegisterBuiltInWindowBackends();
+            
+            // 1) register built-in backends explicitly
+            // (void)FrameKit_RegisterBackend_Win32();
+
+            // 2) optionally load plugins here if you use them
+            // LoadWindowPluginsFrom(std::filesystem::path(spec.WorkingDirectory) / "plugins");
+
+             //debug: list what we have
+             for (auto& b : ListWindowBackends()) std::cerr << "Backend " << (int)b.id << " " << b.name << "\n";
+
+            WindowDesc wd;
+            wd.title = spec.Name;
+            wd.width = 1280;
+            wd.height = 720;
+            wd.vsync = spec.VSync;
+            wd.visible = true;
+            wd.resizable = true;
+            wd.highDPI = true;
+
+            // pick best available backend
+            WindowPtr w = CreateWindow(WindowBackend::Auto, wd);
+            if (!w) return false;
+            win_ = std::move(w);
             return app.Init();
         }
 
@@ -93,35 +101,35 @@ namespace FrameKit {
             if (loop_.closing) return false;
 
             app.OnBeforePoll();
-            if (!win_ || !win_->Pump()) {
-                app.OnAfterPoll();
-                loop_.closing = true;
-                return false;
-            }
+            if (!win_) { app.OnAfterPoll(); loop_.closing = true; return false; }
+            win_->poll();
+            if (win_->shouldClose()) { app.OnAfterPoll(); loop_.closing = true; return false; }
             app.OnAfterPoll();
 
             loop_.frame_start = CommonLoop::steady::now();
-            loop_.clock.Tick();                         // updates internal delta/elapsed
+            loop_.clock.Tick();
             Timestep ts = loop_.clock.Delta();
-			ts = (ts.Seconds() > 0.0f) ? ts : Timestep(1.0f / 60.0f); // clamp to 60 FPS min
+            ts = (ts.Seconds() > 0.0f) ? ts : Timestep(1.0f / 60.0f);
+
             app.OnBeforeUpdate(ts);
-            if (!app.OnUpdate(ts)) { loop_.closing = true; }
+            if (!app.OnUpdate(ts)) loop_.closing = true;
             app.OnAfterUpdate(ts);
 
             if (!loop_.closing) {
                 app.OnBeforeRender();
                 app.OnRender();
                 app.OnAfterRender();
-                if (win_) win_->Swap();
+                // renderer applies vsync on present; window just stores the flag
             }
 
-			stats_.ts = ts.Seconds();                   // keep HostStats as seconds scalar
-            stats_.frame = loop_.frame + 1;             // next frame index
-            
+            stats_.ts = ts.Seconds();
+            stats_.frame = loop_.frame + 1;
+
             return loop_.PaceAndEndFrame(app);
         }
 
-        void SignalClose() override { loop_.closing = true; if (win_) win_->RequestClose(); }
+
+        void SignalClose() override { loop_.closing = true; if (win_) win_->requestClose(); }
         HostStats Stats() const override { return stats_; }
     };
 

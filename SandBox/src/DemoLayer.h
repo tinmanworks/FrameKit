@@ -22,15 +22,9 @@ public:
 	}
 
 	void OnSyncUpdate(FrameKit::Timestep ts) override {
-		// Example update logic
 		FK_PROFILE_FUNCTION();
-		static int num = 0;
-		FK_CRITICAL("DemoLayer::OnSyncUpdate {} - Delta Time: {}", num, ts.Seconds());
-		num++;
 	}
 
 	void OnEvent(FrameKit::Event& event) override {
-		// Example event handling
-		printf("DemoLayer::OnEvent\n");
 	}
 };

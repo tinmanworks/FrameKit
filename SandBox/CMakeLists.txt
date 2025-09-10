@@ -23,4 +23,6 @@ target_sources(SandBox PRIVATE
   "${CMAKE_CURRENT_LIST_DIR}/src/DemoLayer.cpp"
 )
 
-target_link_libraries(SandBox FrameKit::FrameKit)
+target_link_libraries(SandBox 
+FrameKit::FrameKit
+)

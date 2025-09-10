@@ -10,32 +10,34 @@
 
 #pragma once
 
+#include "FrameKit/Engine/PlatformDetection.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #define FRAMEKIT_WINDOW_PLUGIN_ABI 1
 
-typedef struct FrameKit_WindowDescC {
-    const char* title;
-    unsigned width, height;
-    int resizable, vsync, visible, highDPI;
-} FrameKit_WindowDescC;
+    typedef struct FrameKit_WindowDescC {
+        const char* title;
+        unsigned width, height;
+        int resizable, vsync, visible, highDPI;
+    } FrameKit_WindowDescC;
 
-typedef void* FrameKit_WindowPtr; // opaque IWindow*
+    typedef void* FrameKit_WindowPtr; // opaque IWindow*
 
-typedef struct FrameKit_WindowPlugin {
-    unsigned abi;          // == FRAMEKIT_WINDOW_PLUGIN_ABI
-    int id;                // matches FrameKit::WindowBackend numeric
-    const char* name;      // "GLFW"/"Win32"/"Cocoa"
-    FrameKit_WindowPtr (*create)(const FrameKit_WindowDescC*);
-    void (*destroy)(FrameKit_WindowPtr);
-} FrameKit_WindowPlugin;
+    typedef struct FrameKit_WindowPlugin {
+        unsigned abi;          // == FRAMEKIT_WINDOW_PLUGIN_ABI
+        int id;                // matches FrameKit::WindowBackend numeric
+        const char* name;      // "GLFW"/"Win32"/"Cocoa"
+        FrameKit_WindowPtr(*create)(const FrameKit_WindowDescC*);
+        void (*destroy)(FrameKit_WindowPtr);
+    } FrameKit_WindowPlugin;
 
-#if defined(_WIN32)
-__declspec(dllexport)
+#if defined(FK_PLATFORM_WINDOWS) 
+    __declspec(dllexport)
 #endif
-const FrameKit_WindowPlugin* FrameKit_GetWindowPlugin(void);
+        const FrameKit_WindowPlugin* FrameKit_GetWindowPlugin(void);
 
 #ifdef __cplusplus
 }

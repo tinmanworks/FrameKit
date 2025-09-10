@@ -1,14 +1,15 @@
 // =============================================================================
 // Project      : FrameKit
-// File         : include/FrameKit/Window/Window.h
+// File         : src/FrameKit/Domains/Window/RunTime/WindowRegistry.cpp
 // Author       : George Gil
 // Created      : 2025-09-10
 // Updated      : 2025-09-10
 // License      : Dual Licensed: GPLv3 or Proprietary (c) 2025 George Gil
-// Description  : 
+// Description  : Window backend registry
 // =============================================================================
 
 #include "FrameKit/Window/Window.h"
+#include "FrameKit/Debug/Log.h"
 
 #include <unordered_map>
 #include <mutex>
@@ -30,7 +31,8 @@ namespace FrameKit {
 
         std::mutex g_mx;
         std::unordered_map<WindowBackend, Entry, EnumClassHash> g_map;
-    }
+    } // namespace
+
 
     bool RegisterWindowBackend(WindowBackend id, std::string_view name, CreateWindowFn fn, int priority) {
         std::lock_guard<std::mutex> lk(g_mx);
@@ -48,22 +50,23 @@ namespace FrameKit {
         return out;
     }
 
-    std::unique_ptr<IWindow> CreateWindow(WindowBackend id, const WindowDesc& d) {
+    WindowPtr CreateWindow(WindowBackend id, const WindowDesc& d) {
         std::lock_guard<std::mutex> lk(g_mx);
         if (id == WindowBackend::Auto) {
             int bestPrio = std::numeric_limits<int>::min();
             WindowBackend bestId = WindowBackend::Auto;
-            // deterministic tie-break by enum order
             for (WindowBackend cand : {WindowBackend::GLFW, WindowBackend::Win32, WindowBackend::Cocoa}) {
                 auto it = g_map.find(cand);
                 if (it == g_map.end() || !it->second.fn) continue;
                 if (it->second.prio > bestPrio) { bestPrio = it->second.prio; bestId = cand; }
             }
             if (bestId != WindowBackend::Auto) return g_map[bestId].fn(d);
-            return {};
+            return WindowPtr(nullptr, +[](IWindow*) {});
         }
         auto it = g_map.find(id);
-        return (it != g_map.end() && it->second.fn) ? it->second.fn(d) : std::unique_ptr<IWindow>{};
+        return (it != g_map.end() && it->second.fn)
+            ? it->second.fn(d)
+            : WindowPtr(nullptr, +[](IWindow*) {});
     }
 
 } // namespace FrameKit

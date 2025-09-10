@@ -25,7 +25,7 @@ constexpr std::size_t GB(std::size_t x) noexcept { return x * 1024ull * 1024ull 
 // -------------
 // Bit utilities
 // -------------
-// Prefer function over macro. 64-bit safe.
+// 64-bit safe.
 constexpr unsigned long long BITU(std::size_t x) noexcept { return 1ull << x; }
 
 // ---------------------------------------

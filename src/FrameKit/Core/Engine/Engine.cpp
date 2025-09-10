@@ -12,6 +12,7 @@
 #include "FrameKit/Core/Engine/Engine.h"
 #include "FrameKit/Application/Application.h"
 #include "FrameKit/Core/Engine/IAppHost.h"
+#include "FrameKit/Debug/Log.h"
 
 namespace FrameKit {
 
