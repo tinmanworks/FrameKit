@@ -3,14 +3,14 @@
 // File         : src/FrameKit/Application/Application.h
 // Author       : George Gil
 // Created      : 2025-09-07
-// Updated      : 2025-09-07
+// Updated      : 2025-09-10
 // License      : Dual Licensed: GPLv3 or Proprietary (c) 2025 George Gil
 // Description  :
 //      
 // =============================================================================
 
 #include "FrameKit/Application/Application.h"
-#include "FrameKit/Engine/LayerStack.h"
+#include "FrameKit/Core/Engine/LayerStack.h"
 
 
 namespace FrameKit {

@@ -3,7 +3,7 @@
 // File         : src/FrameKit/Application/ApplicationBase.cpp
 // Author       : George Gil
 // Created      : 2025-09-07
-// Updated      : 2025-09-07
+// Updated      : 2025-09-10
 // License      : Dual Licensed: GPLv3 or Proprietary (c) 2025 George Gil
 // Description  :
 //      Implements the ApplicationBase class for the FrameKit framework.
@@ -13,7 +13,7 @@
 
 #include "FrameKit/Application/ApplicationBase.h"
 #include "FrameKit/Engine/Layer.h"
-#include "FrameKit/Engine/LayerStack.h"
+#include "FrameKit/Core/Engine/LayerStack.h"
 
 namespace FrameKit {
 

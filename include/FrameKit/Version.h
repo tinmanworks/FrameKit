@@ -3,7 +3,7 @@
 // File         : include/Version.h
 // Author       : George Gil
 // Created      : 2025-09-07
-// Updated      : 2025-09-07
+// Updated      : 2025-09-10
 // License      : Dual Licensed: GPLv3 or Proprietary (c) 2025 George Gil
 // Description  :
 //          Defines the current FrameKit version. Use FK_VERSION_* macros
@@ -12,13 +12,13 @@
 
 #pragma once
 
-#define FK_VERSION_MAJOR 1
-#define FK_VERSION_MINOR 0
+#define FK_VERSION_MAJOR 0
+#define FK_VERSION_MINOR 3
 #define FK_VERSION_PATCH 0
 
 // Optional: Derived string versions
-#define FK_VERSION_STRING   "1.0.0"
-#define FK_VERSION_WSTRING  L"1.0.0"
+#define FK_VERSION_STRING   "0.3.0"
+#define FK_VERSION_WSTRING  L"0.3.0"
 
 // Optional: Project metadata
 #define FK_PROJECT_NAME     "FrameKit"

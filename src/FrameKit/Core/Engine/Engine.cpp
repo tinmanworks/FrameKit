@@ -3,15 +3,15 @@
 // File         : src/FrameKit/Engine/Engine.cpp
 // Author       : George Gil
 // Created      : 2025-09-07
-// Updated      : 2025-09-08
+// Updated      : 2025-09-10
 // License      : Dual Licensed: GPLv3 or Proprietary (c) 2025 George Gil
 // Description  :
 //   Engine-owned entry. Delegates to client CreateApplication and runs the host loop.
 // =============================================================================
 
-#include "FrameKit/Engine/Engine.h"
+#include "FrameKit/Core/Engine/Engine.h"
 #include "FrameKit/Application/Application.h"
-#include "FrameKit/Engine/IAppHost.h"
+#include "FrameKit/Core/Engine/IAppHost.h"
 
 namespace FrameKit {
 

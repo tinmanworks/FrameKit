@@ -9,6 +9,7 @@
       "binaryDir": "${sourceDir}/build/${presetName}",
       "cacheVariables": {
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "CMAKE_OUTPUT_DIRECTORY": "${sourceDir}/_result/${presetName}",
         "CMAKE_INSTALL_PREFIX": "${sourceDir}/_install/${presetName}/FrameKit",
         "BUILD_SANDBOX": "ON"
       }

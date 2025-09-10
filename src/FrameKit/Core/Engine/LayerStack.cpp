@@ -3,13 +3,13 @@
 // File         : src/FrameKit/Engine/LayerStack.cpp
 // Author       : George Gil
 // Created      : 2025-09-08
-// Updated      : 2025-09-08
+// Updated      : 2025-09-10
 // License      : Dual Licensed: GPLv3 or Proprietary (c) 2025 George Gil
 // Description  : 
 //      Implementation of LayerStack: manages owned Layer* and overlay ordering.
 // =============================================================================
 
-#include "FrameKit/Engine/LayerStack.h"
+#include "FrameKit/Core/Engine/LayerStack.h"
 
 #include <algorithm> // std::find
 
