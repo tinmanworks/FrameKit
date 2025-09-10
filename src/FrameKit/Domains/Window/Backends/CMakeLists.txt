@@ -68,16 +68,16 @@ endif()
 
 # ----------------------------- GLFW backend ---------------------------------
 if(FRAMEKIT_WINDOW_BACKEND_GLFW AND _have_glfw)
-  framekit_add_backend(
-    DOMAIN     Window
-    TARGET     FrameKit.Window.GLFW
-    COMPONENT  Window.GLFW
-    SOURCES    ${FRAMEKIT_WINDOW_DOMAIN_DIR}/Backends/GLFW/GlfwWindow.cpp
-    HEADERS    ${FRAMEKIT_WINDOW_DOMAIN_DIR}/Backends/GLFW/GlfwWindow.h
-    PUBLIC_DEFINES FK_WINDOW_BACKEND_GLFW=1)
-  target_link_libraries(FrameKit.Window.GLFW PRIVATE FrameKitDeps::GLFW)
+    framekit_add_backend(
+        DOMAIN     Window
+        TARGET     FrameKit.Window.GLFW
+        COMPONENT  Window.GLFW
+        SOURCES    ${FRAMEKIT_WINDOW_DOMAIN_DIR}/Backends/GLFW/GlfwWindow.cpp
+        HEADERS    ${FRAMEKIT_WINDOW_DOMAIN_DIR}/Backends/GLFW/GlfwWindow.h
+        PUBLIC_DEFINES FK_WINDOW_BACKEND_GLFW=1)
+    target_link_libraries(FrameKit.Window.GLFW PRIVATE FrameKitDeps::GLFW)
 elseif(FRAMEKIT_WINDOW_BACKEND_GLFW)
-  message(WARNING "GLFW backend enabled but GLFW was not found. Skipping FrameKit.Window.GLFW.")
+    message(STATUS "GLFW backend enabled but GLFW was not found. Skipping FrameKit.Window.GLFW.")
 endif()
 
 # ----------------------------- Win32 backend --------------------------------
