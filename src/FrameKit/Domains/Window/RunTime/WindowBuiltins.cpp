@@ -1,3 +1,13 @@
+// =============================================================================
+// Project      : FrameKit
+// File         : src/FrameKit/Domains/Window/RunTime/WindowBuiltins.cpp
+// Author       : George Gil
+// Created      : 2025-09-10
+// Updated      : 2025-09-10
+// License      : Dual Licensed: GPLv3 or Proprietary (c) 2025 George Gil
+// Description  : Declarations for built-in window backends
+// =============================================================================
+
 #include "FrameKit/Window/Window.h"
 #include "FrameKit/Window/WindowBuiltins.h"
 

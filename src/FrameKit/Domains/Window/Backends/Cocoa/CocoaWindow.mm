@@ -1,5 +1,15 @@
+// =============================================================================
+// Project      : FrameKit
+// File         : src/FrameKit/Domains/Window/Backends/Cocoa/CocoaWindow.mm
+// Author       : George Gil
+// Created      : 2025-09-10
+// Updated      : 2025-09-10
+// License      : Dual Licensed: GPLv3 or Proprietary (c) 2025 George Gil
+// Description  : Cocoa (macOS) window backend implementation
+// =============================================================================
+
 #import <Cocoa/Cocoa.h>
-#include "FrameKit/Platform/Window.h"
+#include "FrameKit/Window/Window.h"
 #include "CocoaWindow.h"
 
 namespace FrameKit {

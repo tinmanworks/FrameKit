@@ -1,4 +1,14 @@
-#include "FrameKit/Platform/Window.h"
+// =============================================================================
+// Project      : FrameKit
+// File         : src/FrameKit/Domains/Window/Backends/GLFW/GlfwWindow.cpp
+// Author       : George Gil
+// Created      : 2025-09-10
+// Updated      : 2025-09-10
+// License      : Dual Licensed: GPLv3 or Proprietary (c) 2025 George Gil
+// Description  : GLFW window backend
+// =============================================================================
+
+#include "FrameKit/Window/Window.h"
 #include "GlfwWindow.h"
 #include <GLFW/glfw3.h>
 #include <cassert>

@@ -17,7 +17,6 @@ public:
 
 	void OnDetach() override {
 		FK_PROFILE_FUNCTION();
-
 		FK_INFO("DemoLayer Detached");
 	}
 
