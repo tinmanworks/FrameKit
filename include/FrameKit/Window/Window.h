@@ -28,6 +28,16 @@ namespace FrameKit {
     enum class WindowBackend : int { Auto = 0, GLFW = 1, Win32 = 2, Cocoa = 3 };
     enum class CursorMode { Normal, Hidden, Locked };
 
+    inline const char* ToString(WindowBackend b) {
+        switch (b) {
+        case WindowBackend::Auto:  return "Auto";
+        case WindowBackend::GLFW:  return "GLFW";
+        case WindowBackend::Win32: return "Win32";
+        case WindowBackend::Cocoa: return "Cocoa";
+        default:                   return "Unknown";
+        }
+    }
+
     // Raw input structs (backend → window layer)
     struct RawKeyEvent { int key, scancode, action, mods; };   // action: 0=release,1=press,2=repeat
     struct RawMouseBtn { int button, action, mods; };          // action: 0=release,1=press

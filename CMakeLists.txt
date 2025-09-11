@@ -36,7 +36,7 @@ option(FRAMEKIT_WARNINGS_AS_ERRORS "Treat warnings as errors" OFF)
 option(BUILD_SANDBOX               "Build the sandbox app" OFF)
 
 # -------------------------- Dependency Options ------------------------------
-option(FRAMEKIT_VENDOR_GLFW "Build bundled GLFW instead of finding system GLFW" OFF)
+option(FRAMEKIT_VENDOR_GLFW "Build bundled GLFW instead of finding system GLFW" ON)
 
 # -------------------------- Window Backend Options --------------------------
 option(FRAMEKIT_WINDOW_BACKEND_GLFW  "Build GLFW backend"  ON)

@@ -71,15 +71,14 @@ namespace FrameKit {
             loop_.SetupTarget(0.0); // uncapped for now; wire max FPS from spec later
 
             RegisterBuiltInWindowBackends();
-            
-            // 1) register built-in backends explicitly
-            // (void)FrameKit_RegisterBackend_Win32();
-
-            // 2) optionally load plugins here if you use them
+			// optionally load window backends from plugins
             // LoadWindowPluginsFrom(std::filesystem::path(spec.WorkingDirectory) / "plugins");
 
-             //debug: list what we have
-             for (auto& b : ListWindowBackends()) std::cerr << "Backend " << (int)b.id << " " << b.name << "\n";
+			// Debug: list available backends
+            FK_CORE_INFO("Window Backends:");
+            for (auto& b : ListWindowBackends()) {
+                FK_CORE_INFO("Backend ID:{} -> {}, Priority: {}", (int)b.id, b.name, b.priority);
+            }
 
             WindowDesc wd;
             wd.title = spec.Name;

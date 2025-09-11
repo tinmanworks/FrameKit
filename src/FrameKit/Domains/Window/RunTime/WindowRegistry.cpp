@@ -10,6 +10,7 @@
 
 #include "FrameKit/Window/Window.h"
 #include "FrameKit/Debug/Log.h"
+#include "FrameKit/Debug/Instrumentor.h"
 
 #include <unordered_map>
 #include <mutex>
@@ -51,6 +52,7 @@ namespace FrameKit {
     }
 
     WindowPtr CreateWindow(WindowBackend id, const WindowDesc& d) {
+		FK_PROFILE_FUNCTION();
         std::lock_guard<std::mutex> lk(g_mx);
         if (id == WindowBackend::Auto) {
             int bestPrio = std::numeric_limits<int>::min();
@@ -60,7 +62,11 @@ namespace FrameKit {
                 if (it == g_map.end() || !it->second.fn) continue;
                 if (it->second.prio > bestPrio) { bestPrio = it->second.prio; bestId = cand; }
             }
-            if (bestId != WindowBackend::Auto) return g_map[bestId].fn(d);
+            if (bestId != WindowBackend::Auto) {
+                FK_CORE_INFO("Selected Window Backend: {}", ToString(bestId));
+                return g_map[bestId].fn(d);
+            }
+			FK_CORE_ERROR("No valid window backend found for 'Auto' selection");
             return WindowPtr(nullptr, +[](IWindow*) {});
         }
         auto it = g_map.find(id);

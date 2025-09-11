@@ -19,7 +19,7 @@ function(framekit_add_backend)
 
   # default folder
   if(NOT B_FOLDER)
-    set(B_FOLDER "FrameKit/Backends")
+    set(B_FOLDER "FrameKit/Backends/${B_DOMAIN}")
   endif()
   set_target_properties(${B_TARGET} PROPERTIES FOLDER "${B_FOLDER}")
 

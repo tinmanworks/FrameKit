@@ -13,6 +13,7 @@
 
 #include "FrameKit/Engine/Defines.h"
 #include "FrameKit/Utilities/Memory.h"
+#include "FrameKit/Debug/Log.h"
 
 #include <atomic>
 #include <chrono>
