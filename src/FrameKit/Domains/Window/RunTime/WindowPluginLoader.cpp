@@ -3,7 +3,7 @@
 // File         : src/FrameKit/Domains/Window/RunTime/WindowPluginLoader.cpp
 // Author       : George Gil
 // Created      : 2025-09-10
-// Updated      : 2025-09-10
+// Updated      : 2025-09-11
 // License      : Dual Licensed: GPLv3 or Proprietary (c) 2025 George Gil
 // Description  : Dynamically loads window backend plugins
 // =============================================================================
@@ -14,12 +14,12 @@
 #include <filesystem>
 #include <mutex>
 
-#if FK_PLATFORM_WINDOWS
+#if defined(FK_PLATFORM_WINDOWS)
 #include <windows.h>
 static void* loadLib(const std::filesystem::path& p) { return (void*)LoadLibraryW(p.wstring().c_str()); }
 static void* loadSym(void* h, const char* n) { return (void*)GetProcAddress((HMODULE)h, n); }
 static void  closeLib(void* h) { if (h) FreeLibrary((HMODULE)h); }
-#elif FK_PLATFORM_APPLE
+#elif defined(FK_PLATFORM_LINUX)
 #include <dlfcn.h>
 static void* loadLib(const std::filesystem::path& p) { return dlopen(p.string().c_str(), RTLD_NOW); }
 static void* loadSym(void* h, const char* n) { return dlsym(h, n); }
@@ -99,7 +99,7 @@ namespace FrameKit {
         if (!P || P->abi != FRAMEKIT_WINDOW_PLUGIN_ABI || !P->create || !P->destroy) { closeLib(h); return; }
 
         auto thunk = [P](const WindowDesc& d) { return WrapC(P, d); }; // capturing OK (std::function)
-        const auto id = static_cast<WindowBackend>(P->id);
+        const auto id = static_cast<WindowAPI>(P->id);
         if (RegisterWindowBackend(id, P->name ? P->name : "Plugin", std::move(thunk), 200)) {
             g_loaded.push_back(LoadedLib{ h, P->name ? P->name : "Plugin", P->id, P });
         }

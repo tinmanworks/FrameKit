@@ -3,7 +3,7 @@
 // File         : src/FrameKit/Domains/Window/Backends/GLFW/GlfwWindow.cpp
 // Author       : George Gil
 // Created      : 2025-09-10
-// Updated      : 2025-09-10
+// Updated      : 2025-09-11
 // License      : Dual Licensed: GPLv3 or Proprietary (c) 2025 George Gil
 // Description  : GLFW window backend
 // =============================================================================
@@ -193,7 +193,7 @@ namespace FrameKit {
 
     // explicit registrar callable from core
     extern "C" bool FrameKit_RegisterBackend_GLFW() {
-        return RegisterWindowBackend(WindowBackend::GLFW, "GLFW", &CreateGLFW, 100);
+        return RegisterWindowBackend(WindowAPI::GLFW, "GLFW", &CreateGLFW, 100);
     }
 
 } // namespace FrameKit

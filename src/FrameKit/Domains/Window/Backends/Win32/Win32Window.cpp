@@ -3,7 +3,7 @@
 // File         : src/FrameKit/Domains/Window/Backends/Win32/Win32Window.cpp
 // Author       : George Gil
 // Created      : 2025-09-10
-// Updated      : 2025-09-10
+// Updated      : 2025-09-11
 // License      : Dual Licensed: GPLv3 or Proprietary (c) 2025 George Gil
 // Description  : Win32 window implementation
 // =============================================================================
@@ -216,7 +216,7 @@ static WindowPtr CreateWin32(const WindowDesc& d) {
 
 // explicit registrar callable from core
 extern "C" bool FrameKit_RegisterBackend_Win32() {
-    return RegisterWindowBackend(WindowBackend::Win32, "Win32", &CreateWin32, 100);
+    return RegisterWindowBackend(WindowAPI::Win32, "Win32", &CreateWin32, 100);
 }
 
 } // namespace FrameKit

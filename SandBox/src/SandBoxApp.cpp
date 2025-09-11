@@ -36,6 +36,13 @@ FrameKit::Application* FrameKit::CreateApplication(FrameKit::ApplicationCommandL
 	spec.Name = "SandBoxApp";
 	spec.CommandLineArgs = args;
 	spec.Mode = FrameKit::AppMode::Windowed;
+	spec.WinSettings.api = FrameKit::WindowAPI::Win32; 
+	spec.WinSettings.title = "SandBoxApp";
+	spec.WinSettings.width = 1280;
+	spec.WinSettings.height = 720;
+	spec.WinSettings.vsync = true;
+	spec.WorkingDirectory = std::filesystem::current_path();
+	// spec.Master = false; // optional, for multi-instance apps or IPC roles
 
     return new SandBox::SandBoxApp(spec);
 }

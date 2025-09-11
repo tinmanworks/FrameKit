@@ -3,7 +3,7 @@
 // File         : src/FrameKit/Engine/Engine.cpp
 // Author       : George Gil
 // Created      : 2025-09-07
-// Updated      : 2025-09-10
+// Updated      : 2025-09-11
 // License      : Dual Licensed: GPLv3 or Proprietary (c) 2025 George Gil
 // Description  :
 //   Engine-owned entry. Delegates to client CreateApplication and runs the host loop.

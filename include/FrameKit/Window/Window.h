@@ -3,7 +3,7 @@
 // File         : include/FrameKit/Window/Window.h
 // Author       : George Gil
 // Created      : 2025-09-10
-// Updated      : 2025-09-10
+// Updated      : 2025-09-11
 // License      : Dual Licensed: GPLv3 or Proprietary (c) 2025 George Gil
 // Description  : Window abstraction and backend registry
 // =============================================================================
@@ -25,16 +25,16 @@ namespace FrameKit {
         bool resizable = true, vsync = true, visible = true, highDPI = true;
     };
 
-    enum class WindowBackend : int { Auto = 0, GLFW = 1, Win32 = 2, Cocoa = 3 };
+    enum class WindowAPI : int { Auto = 0, GLFW = 1, Win32 = 2, Cocoa = 3 };
     enum class CursorMode { Normal, Hidden, Locked };
 
-    inline const char* ToString(WindowBackend b) {
+    inline const char* ToString(WindowAPI b) {
         switch (b) {
-        case WindowBackend::Auto:  return "Auto";
-        case WindowBackend::GLFW:  return "GLFW";
-        case WindowBackend::Win32: return "Win32";
-        case WindowBackend::Cocoa: return "Cocoa";
-        default:                   return "Unknown";
+        case WindowAPI::Auto:  return "Auto";
+        case WindowAPI::GLFW:  return "GLFW";
+        case WindowAPI::Win32: return "Win32";
+        case WindowAPI::Cocoa: return "Cocoa";
+        default:               return "Unknown";
         }
     }
 
@@ -85,11 +85,11 @@ namespace FrameKit {
     using CreateWindowFn = std::function<WindowPtr(const WindowDesc&)>;
 
     // registry
-    bool RegisterWindowBackend(WindowBackend id, std::string_view name, CreateWindowFn createfn, int priority); // priority: higher = preferred
+    bool RegisterWindowBackend(WindowAPI id, std::string_view name, CreateWindowFn createfn, int priority); // priority: higher = preferred
 
-    struct WindowBackendInfo { WindowBackend id; std::string name; int priority; };
+    struct WindowAPIInfo { WindowAPI id; std::string name; int priority; };
 
-    std::vector<WindowBackendInfo> ListWindowBackends();
-    WindowPtr CreateWindow(WindowBackend id, const WindowDesc& d);
+    std::vector<WindowAPIInfo> ListWindowBackends();
+    WindowPtr CreateWindow(WindowAPI id, const WindowDesc& d);
 
 } // namespace FrameKit

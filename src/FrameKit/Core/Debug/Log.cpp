@@ -3,7 +3,7 @@
 // File         : src/FrameKit/Debug/Log.cpp
 // Author       : George Gil
 // Created      : 2025-09-09
-// Updated      : 2025-09-09
+// Updated      : 2025-09-11
 // License      : Dual Licensed: GPLv3 or Proprietary (c) 2025 George Gil
 // Description  : Implements FrameKit Logger and Log.
 // =============================================================================
@@ -11,7 +11,7 @@
 #include "FrameKit/Engine/PlatformDetection.h"
 #include "FrameKit/Debug/Log.h"
 
-#if FK_PLATFORM_WINDOWS
+#if defined(FK_PLATFORM_WINDOWS)
     #define NOMINMAX
     #include <windows.h>
 #endif
@@ -38,7 +38,7 @@ namespace FrameKit {
         using namespace std::chrono;
         auto t = system_clock::to_time_t(system_clock::now());
         std::tm bt{};
-#if FK_PLATFORM_WINDOWS
+#if defined(FK_PLATFORM_WINDOWS)
         localtime_s(&bt, &t);
 #else
         localtime_r(&t, &bt);
@@ -58,7 +58,7 @@ namespace FrameKit {
 
         std::scoped_lock lk(m_Mutex);
         if (m_Console.load(std::memory_order_relaxed)) {
-#if FK_PLATFORM_WINDOWS
+#if defined(FK_PLATFORM_WINDOWS)
             // Enable ANSI VT once
             static bool vtEnabled = false;
             if (!vtEnabled) {

@@ -4,7 +4,7 @@
   File         : src/FrameKit/CMakeLists.txt
   Author       : George Gil
   Created      : 2025-09-10
-  Updated      : 2025-09-10
+  Updated      : 2025-09-11
   License      : Dual Licensed: GPLv3 or Proprietary (c) 2025 George Gil
   Description  : CMakeLists.txt for FrameKit core library and domains.
 ========================================================================================

@@ -3,7 +3,7 @@
 // File         : src/FrameKit/Engine/Host.cpp
 // Author       : George Gil
 // Created      : 2025-09-07
-// Updated      : 2025-09-08
+// Updated      : 2025-09-11
 // License      : Dual Licensed: GPLv3 or Proprietary (c) 2025 George Gil
 // Description  :
 //      Implements application hosts (Windowed and Headless) for the FrameKit framework.
@@ -87,13 +87,13 @@ namespace FrameKit {
             wd.title = spec.Name;
             wd.width = 1280;
             wd.height = 720;
-            wd.vsync = spec.VSync;
+            wd.vsync = spec.WinSettings.vsync;
             wd.visible = true;
             wd.resizable = true;
             wd.highDPI = true;
 
             // pick best available backend
-            WindowPtr w = CreateWindow(WindowBackend::Auto, wd);
+            WindowPtr w = CreateWindow(spec.WinSettings.api, wd);
             if (!w) return false;
             win_ = std::move(w);
             return app.Init();
