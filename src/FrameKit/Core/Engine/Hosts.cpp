@@ -16,6 +16,7 @@
 #include "FrameKit/Utilities/Time.h"
 #include "FrameKit/Window/Window.h"
 #include "FrameKit/Debug/Log.h"
+#include "FrameKit/Debug/Instrumentor.h"
 #include "FrameKit/Window/WindowBuiltins.h"
 
 #include <chrono>
@@ -49,6 +50,7 @@ namespace FrameKit {
         }
 
         bool PaceAndEndFrame(ApplicationBase& app) {
+			FK_PROFILE_FUNCTION();
             if (target_dt.Seconds() > 0.0f) {
                 auto spent = Timestep(std::chrono::duration<float>(steady::now() - frame_start));
                 auto remain = target_dt - spent;
@@ -67,6 +69,7 @@ namespace FrameKit {
         HostStats stats_{};
     public:
         bool Init(ApplicationBase& app) override {
+            FK_PROFILE_FUNCTION();
             const auto& spec = app.GetSpec();
             loop_.SetupTarget(0.0); // uncapped for now; wire max FPS from spec later
 
@@ -97,6 +100,7 @@ namespace FrameKit {
         }
 
         bool Tick(ApplicationBase& app) override {
+            FK_PROFILE_FUNCTION();
             if (loop_.closing) return false;
 
             app.OnBeforePoll();
@@ -168,6 +172,7 @@ namespace FrameKit {
 
     // Factory used by Engine
     std::unique_ptr<IAppHost> MakeHost(AppMode mode) {
+        FK_PROFILE_FUNCTION();
         if (mode == AppMode::Windowed) return std::make_unique<WindowedHost>();
         return std::make_unique<HeadlessHost>();
     }

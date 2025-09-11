@@ -25,7 +25,6 @@ int main(int argc, char** argv) {
 
     try {
         FrameKit::ApplicationCommandLineArgs args{ argc, argv };
-
         std::unique_ptr<FrameKit::Application> app{ FrameKit::CreateApplication(args) };
         if (!app) {
             std::cerr << "Failed to create application instance." << std::endl;

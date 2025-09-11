@@ -24,7 +24,7 @@ namespace SandBox {
         }
 
         void Shutdown() override {
-			printf("SandBoxApp::Shutdown\n");\
+            FK_INFO("SandBoxApp Shutting down");
         }
     };
 
