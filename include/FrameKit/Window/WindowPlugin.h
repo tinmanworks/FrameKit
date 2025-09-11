@@ -34,7 +34,7 @@ extern "C" {
         void (*destroy)(FrameKit_WindowPtr);
     } FrameKit_WindowPlugin;
 
-#if defined(FK_PLATFORM_WINDOWS) 
+#if FK_PLATFORM_WINDOWS
     __declspec(dllexport)
 #endif
         const FrameKit_WindowPlugin* FrameKit_GetWindowPlugin(void);

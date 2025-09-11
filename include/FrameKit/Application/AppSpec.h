@@ -31,7 +31,7 @@ namespace FrameKit {
         std::string                Name             = "FrameKit Application";
         std::string                WorkingDirectory = {};
         ApplicationCommandLineArgs CommandLineArgs  = {};
-        AppMode                    AppMode          = AppMode::Windowed;
+        AppMode                    Mode             = AppMode::Windowed;
         bool                       VSync            = true;
 		bool                       Master           = false;    // optional, for multi-instance apps or IPC roles
     };

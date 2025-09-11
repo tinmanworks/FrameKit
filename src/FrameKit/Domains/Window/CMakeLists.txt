@@ -33,12 +33,13 @@ target_sources(FrameKit.WindowAPI INTERFACE
 
 # -------- Runtime (registry + loader) --------
 add_library(FrameKit.WindowRuntime STATIC
-  "${FRAMEKIT_WINDOW_DOMAIN_DIR}/Runtime/WindowRegistry.cpp"
-  "${FRAMEKIT_WINDOW_DOMAIN_DIR}/Runtime/WindowPluginLoader.cpp"
-  "${FRAMEKIT_WINDOW_DOMAIN_DIR}/Runtime/WindowBuiltins.cpp")
+  "${FRAMEKIT_WINDOW_DOMAIN_DIR}/RunTime/WindowRegistry.cpp"
+  "${FRAMEKIT_WINDOW_DOMAIN_DIR}/RunTime/WindowPluginLoader.cpp"
+  "${FRAMEKIT_WINDOW_DOMAIN_DIR}/RunTime/WindowBuiltins.cpp")
 add_library(FrameKit::WindowRuntime ALIAS FrameKit.WindowRuntime)
 
 target_link_libraries(FrameKit.WindowRuntime PUBLIC FrameKit.WindowAPI)
+target_link_libraries(FrameKit PUBLIC FrameKit.WindowRuntime)
 target_include_directories(FrameKit.WindowRuntime
   PUBLIC
     $<BUILD_INTERFACE:${FRAMEKIT_INCLUDE_DIR}>

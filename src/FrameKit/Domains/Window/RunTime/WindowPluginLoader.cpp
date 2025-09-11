@@ -12,15 +12,14 @@
 #include "FrameKit/Window/WindowPlugin.h"
 
 #include <filesystem>
-#include <windows.h>
 #include <mutex>
 
-#if defined(FK_PLATFORM_WINDOWS)
+#if FK_PLATFORM_WINDOWS
 #include <windows.h>
 static void* loadLib(const std::filesystem::path& p) { return (void*)LoadLibraryW(p.wstring().c_str()); }
 static void* loadSym(void* h, const char* n) { return (void*)GetProcAddress((HMODULE)h, n); }
 static void  closeLib(void* h) { if (h) FreeLibrary((HMODULE)h); }
-#elif defined(FK_PLATFORM_APPLE)
+#elif FK_PLATFORM_APPLE
 #include <dlfcn.h>
 static void* loadLib(const std::filesystem::path& p) { return dlopen(p.string().c_str(), RTLD_NOW); }
 static void* loadSym(void* h, const char* n) { return dlsym(h, n); }

@@ -14,21 +14,29 @@
 // ---------------------
 // Platform detection
 // ---------------------
-#define FK_PLATFORM_WINDOWS 0
-#define FK_PLATFORM_LINUX   0
-#define FK_PLATFORM_MACOS   0
+#ifndef FK_PLATFORM_WINDOWS
+    #define FK_PLATFORM_WINDOWS 0
+#endif
+#ifndef FK_PLATFORM_LINUX
+    #define FK_PLATFORM_LINUX 0
+#endif
+#ifndef FK_PLATFORM_MACOS
+    #define FK_PLATFORM_MACOS 0
+#endif
 
-#if defined(_WIN32) || defined(_WIN64)
-#undef  FK_PLATFORM_WINDOWS
-#define FK_PLATFORM_WINDOWS 1
-#elif defined(__APPLE__)
-#undef  FK_PLATFORM_MACOS
-#define FK_PLATFORM_MACOS 1
-#elif defined(__linux__)
-#undef  FK_PLATFORM_LINUX
-#define FK_PLATFORM_LINUX 1
-#else
-#error "Unsupported platform"
+#if (FK_PLATFORM_WINDOWS + FK_PLATFORM_LINUX + FK_PLATFORM_MACOS) == 0
+    #if defined(_WIN32) || defined(_WIN64)
+        #undef  FK_PLATFORM_WINDOWS
+        #define FK_PLATFORM_WINDOWS 1
+    #elif defined(__APPLE__)
+        #undef  FK_PLATFORM_MACOS
+        #define FK_PLATFORM_MACOS 1
+    #elif defined(__linux__)
+        #undef  FK_PLATFORM_LINUX
+        #define FK_PLATFORM_LINUX 1
+    #else
+        #error "Unsupported platform"
+    #endif
 #endif
 
 // ---------------------

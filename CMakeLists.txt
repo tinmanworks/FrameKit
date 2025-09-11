@@ -81,7 +81,7 @@ include(GNUInstallDirs)
 # ------------------------------ Subdirectories -------------------------------
 add_subdirectory(src/FrameKit)
 if(BUILD_SANDBOX)
-  add_subdirectory(sandbox)
+  add_subdirectory(SandBox)
 endif()
 
 # ------------------------------ Package Config -------------------------------

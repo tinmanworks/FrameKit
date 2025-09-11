@@ -17,7 +17,7 @@
 namespace FrameKit {
 
     int Engine(ApplicationBase& app) {
-        auto host = MakeHost(app.GetSpec().AppMode);
+        auto host = MakeHost(app.GetSpec().Mode);
         if (!host) { app.Shutdown(); return 1; }
 		if (!host->Init(app)) { app.Shutdown(); return 1; }
 

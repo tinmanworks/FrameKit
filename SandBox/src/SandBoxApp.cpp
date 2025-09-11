@@ -35,7 +35,7 @@ FrameKit::Application* FrameKit::CreateApplication(FrameKit::ApplicationCommandL
     ApplicationSpecification spec;
 	spec.Name = "SandBoxApp";
 	spec.CommandLineArgs = args;
-	spec.AppMode = FrameKit::AppMode::Windowed;
+	spec.Mode = FrameKit::AppMode::Windowed;
 
     return new SandBox::SandBoxApp(spec);
 }

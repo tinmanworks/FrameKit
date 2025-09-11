@@ -44,5 +44,4 @@ inline constexpr bool operator&(EnumType a, EnumType b) noexcept { \
 // ---------------------------------------
 // Perfect-forwarding event bind helper
 // ---------------------------------------
-#define FK_BIND_EVENT_FN(fn) [this](auto&&... args) noexcept(noexcept(this->fn(std::forward<decltype(args)>(args)...))) \
--> decltype(auto) { return this->fn(std::forward<decltype(args)>(args)...); }
+#define FK_BIND_EVENT_FN(fn) [this](auto&&... args) noexcept(noexcept(this->fn(std::forward<decltype(args)>(args)...))) -> decltype(auto) { return this->fn(std::forward<decltype(args)>(args)...); }

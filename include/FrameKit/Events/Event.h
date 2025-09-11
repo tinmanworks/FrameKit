@@ -16,6 +16,7 @@
 #include <functional>
 #include <string>
 #include <ostream>
+#include <cstdint>
 
 namespace FrameKit {
 
