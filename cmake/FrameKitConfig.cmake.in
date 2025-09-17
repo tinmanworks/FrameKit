@@ -1,3 +1,27 @@
 @PACKAGE_INIT@
+include(CMakeFindDependencyMacro)
+
+if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/FrameKitDepsTargets.cmake")
+  if(NOT (TARGET glfw OR TARGET glfw3 OR TARGET glfw::glfw))
+    find_dependency(glfw3 CONFIG QUIET)
+  endif()
+  include("${CMAKE_CURRENT_LIST_DIR}/FrameKitDepsTargets.cmake")
+  if(TARGET FrameKitDeps.GLFW AND NOT TARGET FrameKitDeps::GLFW)
+    add_library(FrameKitDeps::GLFW ALIAS FrameKitDeps.GLFW)
+  endif()
+endif()
 
 include("${CMAKE_CURRENT_LIST_DIR}/FrameKitTargets.cmake")
+
+if(TARGET FrameKit::Window.GLFW)
+  if(NOT (TARGET glfw OR TARGET glfw3 OR TARGET glfw::glfw))
+    find_dependency(glfw3 CONFIG QUIET)
+  endif()
+  if(NOT (TARGET glfw OR TARGET glfw3 OR TARGET glfw::glfw))
+    message(FATAL_ERROR
+      "FrameKit::Window.GLFW present but no GLFW target found. "
+      "Add `find_package(glfw3 CONFIG REQUIRED)` or vendor GLFW before FrameKit.")
+  endif()
+endif()
+
+check_required_components(FrameKit)

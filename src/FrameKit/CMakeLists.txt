@@ -10,6 +10,8 @@
 ========================================================================================
 ]]
 
+message(STATUS "===================================== FrameKit SDK =====================================")
+
 cmake_minimum_required(VERSION 3.23)
 
 # -------- Public headers (installed) --------
@@ -65,6 +67,9 @@ target_compile_definitions(FrameKit PUBLIC
   $<$<CONFIG:Debug>:FK_PROFILE=1>
   $<$<NOT:$<CONFIG:Debug>>:FK_PROFILE=0>)
 
+message(STATUS "FrameKit core library configured.")
+message(STATUS "========================================================================================")
+
 # -------- Domains (Window, Audio, Gfx, …) --------
 add_subdirectory("${FRAMEKIT_SRC_DIR}/FrameKit/Domains")
 
@@ -72,13 +77,13 @@ add_subdirectory("${FRAMEKIT_SRC_DIR}/FrameKit/Domains")
 include(GNUInstallDirs)
 install(TARGETS FrameKit
   EXPORT FrameKitTargets
-  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/$<CONFIG>
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/$<CONFIG>
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}/$<CONFIG>
   INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install(DIRECTORY "${FRAMEKIT_INCLUDE_DIR}/" DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 # Export everything (core + domains)
-install(EXPORT FrameKitTargets
-  NAMESPACE FrameKit::
-  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/FrameKit)
+# install(EXPORT FrameKitTargets
+#   NAMESPACE FrameKit::
+#   DESTINATION ${CMAKE_INSTALL_PREFIX}/cmake/FrameKit)

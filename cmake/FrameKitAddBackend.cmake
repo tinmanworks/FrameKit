@@ -3,6 +3,29 @@ function(framekit_add_backend)
   set(multiValueArgs SOURCES HEADERS PUBLIC_LIBS PRIVATE_LIBS PUBLIC_DEFINES)
   cmake_parse_arguments(B "" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
+  message(STATUS "---------------------------------------------")
+  message(STATUS "Adding ${B_TARGET} Window backend")
+  message(STATUS "---------------------------------------------")
+
+  message(STATUS "  Domain:        ${B_DOMAIN}")
+  message(STATUS "  Target:        ${B_TARGET}")
+  message(STATUS "  Component:     ${B_COMPONENT}")
+  if(B_FOLDER)
+    message(STATUS "  Folder:        ${B_FOLDER}")
+  endif()
+  message(STATUS "  Sources:       ${B_SOURCES}")
+  message(STATUS "  Headers:       ${B_HEADERS}")
+  if(B_PUBLIC_LIBS)
+    message(STATUS "  Public Libs:   ${B_PUBLIC_LIBS}")
+  endif()
+  if(B_PRIVATE_LIBS)
+    message(STATUS "  Private Libs:  ${B_PRIVATE_LIBS}")
+  endif()
+  if(B_PUBLIC_DEFINES)
+    message(STATUS "  Public Defines: ${B_PUBLIC_DEFINES}")
+  endif()
+  message(STATUS "")
+
   add_library(${B_TARGET} STATIC ${B_SOURCES} ${B_HEADERS})
   # Backend depends on the domain API. Runtime will depend on backend (see below).
   target_link_libraries(${B_TARGET}
@@ -17,9 +40,6 @@ function(framekit_add_backend)
   # Make the runtime depend on this backend and see the same defines.
   if(TARGET FrameKit.${B_DOMAIN}Runtime)
     target_link_libraries(FrameKit.${B_DOMAIN}Runtime PUBLIC ${B_TARGET})
-    if(B_PUBLIC_DEFINES)
-      target_compile_definitions(FrameKit.${B_DOMAIN}Runtime PUBLIC ${B_PUBLIC_DEFINES})
-    endif()
   endif()
   
   # Default IDE folder
@@ -30,8 +50,8 @@ function(framekit_add_backend)
 
   install(TARGETS ${B_TARGET}
     EXPORT FrameKitTargets
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/$<CONFIG>
+    LIBRARY  DESTINATION ${CMAKE_INSTALL_LIBDIR}/$<CONFIG>
+    RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR}/$<CONFIG>
     COMPONENT ${B_COMPONENT})
 endfunction()

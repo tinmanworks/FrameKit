@@ -10,23 +10,22 @@
       "cacheVariables": {
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
         "CMAKE_OUTPUT_DIRECTORY": "${sourceDir}/_result/${presetName}",
-        "CMAKE_INSTALL_PREFIX": "${sourceDir}/_install/${presetName}/FrameKit",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/_install/FrameKit/${presetName}",
         "BUILD_SANDBOX": "ON"
       }
     },
 
     {
-      "name": "linux-ninja-debug",
-      "displayName": "Linux • Ninja • Debug",
+      "name": "linux-gcc13-x86_64-debug",
+      "displayName": "Linux • GCC13 • x86_64 • Debug",
       "inherits": "base",
       "generator": "Ninja",
       "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" },
       "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Linux" }
     },
-
     {
-      "name": "linux-ninja-release",
-      "displayName": "Linux • Ninja • Release",
+      "name": "linux-gcc13-x86_64-release",
+      "displayName": "Linux • GCC13 • x86_64 • Release",
       "inherits": "base",
       "generator": "Ninja",
       "cacheVariables": {
@@ -37,19 +36,20 @@
     },
 
     {
-      "name": "windows-vs",
-      "displayName": "Windows - VS2022",
+      "name": "windows-vs2022-x64",
+      "displayName": "Windows • VS2022 • x64",
       "inherits": "base",
       "generator": "Visual Studio 17 2022",
+      "architecture": { "value": "x64" },
       "cacheVariables": { "CMAKE_CONFIGURATION_TYPES": "Debug;Release" },
       "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Windows" }
     }
   ],
 
   "buildPresets": [
-    { "name": "linux-ninja-debug",   "configurePreset": "linux-ninja-debug" },
-    { "name": "linux-ninja-release", "configurePreset": "linux-ninja-release" },
-    { "name": "windows-vs-Debug",    "configurePreset": "windows-vs", "configuration": "Debug" },
-    { "name": "windows-vs-Release",  "configurePreset": "windows-vs", "configuration": "Release" }
+    { "name": "linux-gcc13-debug",   "configurePreset": "linux-gcc13-x86_64-debug" },
+    { "name": "linux-gcc13-release", "configurePreset": "linux-gcc13-x86_64-release" },
+    { "name": "windows-vs-Debug",    "configurePreset": "windows-vs2022-x64", "configuration": "Debug" },
+    { "name": "windows-vs-Release",  "configurePreset": "windows-vs2022-x64", "configuration": "Release" }
   ]
 }

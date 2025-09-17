@@ -1,29 +1,54 @@
 # ---- Third-party: GLFW ----
-# Make sure cache options override upstream defaults
 if(POLICY CMP0077)
   cmake_policy(SET CMP0077 NEW)
 endif()
 
-message(STATUS "Configuring GLFW..."
-  " (FRAMEKIT_VENDOR_GLFW=${FRAMEKIT_VENDOR_GLFW})")
-  
-# Slim build: static lib, no samples/tests/install
-set(BUILD_SHARED_LIBS           OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_EXAMPLES         OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_TESTS            OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_DOCS             OFF CACHE BOOL "" FORCE)
-set(GLFW_INSTALL                OFF CACHE BOOL "" FORCE)
-# Force X11 on Linux (default), flip to ON for Wayland if you prefer that path:
-set(GLFW_BUILD_WAYLAND          OFF CACHE BOOL "" FORCE)
+message(STATUS "===================================== Vendor GLFW ======================================")
+message(STATUS "Configuring GLFW... (FRAMEKIT_VENDOR_GLFW=${FRAMEKIT_VENDOR_GLFW})")
 
-add_subdirectory(glfw)
+# Vendored GLFW only if requested and not already provided
+if(FRAMEKIT_VENDOR_GLFW
+   AND EXISTS "${CMAKE_CURRENT_LIST_DIR}/glfw/CMakeLists.txt"
+   AND NOT (TARGET glfw OR TARGET glfw3 OR TARGET glfw::glfw))
+  set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+  set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+  set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+  set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+  set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
+  set(GLFW_BUILD_WAYLAND OFF CACHE BOOL "" FORCE)
+  add_subdirectory(glfw)
+endif()
 
-# place_in_folder(update_mappings "vendor/glfw")
-# place_in_folder(glfw "vendor/glfw")
+# Bridge target
+if(TARGET glfw OR TARGET glfw3 OR TARGET glfw::glfw)
+  if(NOT TARGET FrameKitDeps.GLFW)
+    add_library(FrameKitDeps.GLFW INTERFACE)
+    add_library(FrameKitDeps::GLFW ALIAS FrameKitDeps.GLFW)
+    set_target_properties(FrameKitDeps.GLFW PROPERTIES FOLDER "FrameKitDeps")
+  endif()
+  if(TARGET glfw)
+    target_link_libraries(FrameKitDeps.GLFW INTERFACE
+      $<BUILD_INTERFACE:glfw>
+      $<INSTALL_INTERFACE:glfw::glfw>)
+  elseif(TARGET glfw3)
+    target_link_libraries(FrameKitDeps.GLFW INTERFACE
+      $<BUILD_INTERFACE:glfw3>
+      $<INSTALL_INTERFACE:glfw::glfw>)
+  else()
+    target_link_libraries(FrameKitDeps.GLFW INTERFACE glfw::glfw)
+  endif()
+endif()
 
-# # IDE folders and filters
-if (TARGET glfw)
-  set_target_properties(glfw PROPERTIES FOLDER "FrameKit/vendor/glfw")
-elseif (TARGET glfw3)
-  set_target_properties(glfw3 PROPERTIES FOLDER "FrameKit/vendor/glfw")
+message(STATUS "========================================================================================")
+# ---- End Third-party: GLFW ----
+
+# Export shim only if it exists
+if(TARGET FrameKitDeps.GLFW)
+  install(TARGETS FrameKitDeps.GLFW
+    EXPORT FrameKitDepsTargets
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/$<CONFIG>
+    LIBRARY  DESTINATION ${CMAKE_INSTALL_LIBDIR}/$<CONFIG>
+    RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR}/$<CONFIG>)
+  install(EXPORT FrameKitDepsTargets
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/FrameKit)
 endif()

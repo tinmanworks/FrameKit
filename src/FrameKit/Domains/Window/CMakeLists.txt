@@ -12,10 +12,16 @@
 ========================================================================================
 ]]
 
+message(STATUS "-------------------------------- FrameKit Window Domain --------------------------------")
+
 # Window domain API (header-only) and runtime (registry + loader)
 set(FRAMEKIT_WINDOW_DOMAIN_DIR "${FRAMEKIT_SRC_DIR}/FrameKit/Domains/Window")
 include("${CMAKE_SOURCE_DIR}/cmake/FrameKitAddBackend.cmake")
 
+message(STATUS "FrameKit Window Domain Dir: ${FRAMEKIT_WINDOW_DOMAIN_DIR}")
+message(STATUS "")
+
+message(STATUS "Setting up Window API")
 # -------- API (INTERFACE) --------
 add_library(FrameKit.WindowAPI INTERFACE)
 target_include_directories(FrameKit.WindowAPI INTERFACE
@@ -30,7 +36,9 @@ target_sources(FrameKit.WindowAPI INTERFACE
   FILE_SET window_api_headers TYPE HEADERS
   BASE_DIRS "${FRAMEKIT_INCLUDE_DIR}"
   FILES ${FRAMEKIT_WINDOW_API_HEADERS})
+message(STATUS "FrameKit Window API Setup Complete")
 
+message(STATUS "Setting up Window Runtime")
 # -------- Runtime (registry + loader) --------
 add_library(FrameKit.WindowRuntime STATIC
   "${FRAMEKIT_WINDOW_DOMAIN_DIR}/RunTime/WindowRegistry.cpp"
@@ -52,6 +60,8 @@ set_target_properties(FrameKit.WindowRuntime PROPERTIES FOLDER "FrameKit")
 #   "${FRAMEKIT_WINDOW_DOMAIN_DIR}/Runtime/WindowRegistry.cpp"
 #   "${FRAMEKIT_WINDOW_DOMAIN_DIR}/Runtime/WindowPluginLoader.cpp")
 
+message(STATUS "FrameKit Window Runtime Setup Complete")
+
 # -------- Backends --------
 add_subdirectory(Backends)
 
@@ -65,7 +75,7 @@ install(TARGETS
 install(TARGETS
   FrameKit.WindowRuntime
   EXPORT FrameKitTargets
-  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/$<CONFIG>
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/$<CONFIG>
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}/$<CONFIG>
   INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})

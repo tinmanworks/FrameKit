@@ -16,55 +16,58 @@
 # - FRAMEKIT_WINDOW_BACKEND_* toggles
 # - FRAMEKIT_VENDOR_GLFW toggle
 
+message(STATUS "============================= FrameKit Window Backends =================================")
+
 # ------------------------------ Resolve GLFW --------------------------------
 set(_have_glfw FALSE)
-
+message(STATUS "Resolving GLFW dependency for FrameKit Window backend...")
 if(FRAMEKIT_WINDOW_BACKEND_GLFW)
-  if(FRAMEKIT_VENDOR_GLFW)
-    # Build bundled GLFW if directory exists
-    if(EXISTS "${FRAMEKIT_VENDOR_DIR}/glfw/CMakeLists.txt")
-      add_subdirectory("${FRAMEKIT_VENDOR_DIR}/glfw"
-                       "${CMAKE_BINARY_DIR}/vendor/glfw"
-                       EXCLUDE_FROM_ALL)
-      if(TARGET glfw)
-        add_library(FrameKitDeps::GLFW INTERFACE IMPORTED)
-        target_link_libraries(FrameKitDeps::GLFW INTERFACE glfw)
-        set(_have_glfw TRUE)
-      elseif(TARGET glfw3)
-        add_library(FrameKitDeps::GLFW INTERFACE IMPORTED)
-        target_link_libraries(FrameKitDeps::GLFW INTERFACE glfw3)
-        set(_have_glfw TRUE)
-      endif()
-    else()
-      message(WARNING "FRAMEKIT_VENDOR_GLFW=ON but ${FRAMEKIT_VENDOR_DIR}/glfw not found")
-    endif()
-  endif()
+  if(TARGET FrameKitDeps.GLFW)
+    message(STATUS "FRAMEKIT_WINDOW_BACKEND_GLFW=ON and found FrameKitDeps::GLFW target.")
+    set(_have_glfw TRUE)
 
-  if(NOT _have_glfw)
-    # Try config package first
-    find_package(glfw3 CONFIG QUIET)
-    if(TARGET glfw OR TARGET glfw3)
-      add_library(FrameKitDeps::GLFW INTERFACE IMPORTED)
+  else()
+    message(STATUS "FRAMEKIT_WINDOW_BACKEND_GLFW=ON but FrameKitDeps::GLFW target not found.")
+
+    # Try CMake package first (config or module)
+    find_package(glfw3 QUIET CONFIG)
+    if(TARGET glfw OR TARGET glfw3 OR TARGET glfw::glfw)
+      message(STATUS "Found GLFW via find_package(glfw3).")
+
+      add_library(FrameKitDeps.GLFW INTERFACE)  # not IMPORTED
       if(TARGET glfw)
-        target_link_libraries(FrameKitDeps::GLFW INTERFACE glfw)
-      else()
-        target_link_libraries(FrameKitDeps::GLFW INTERFACE glfw3)
+        message(STATUS "Using target 'glfw'.")
+        target_link_libraries(FrameKitDeps.GLFW INTERFACE glfw)
+      elseif(TARGET glfw3)
+        message(STATUS "Using target 'glfw3'.")
+        target_link_libraries(FrameKitDeps.GLFW INTERFACE glfw3)
+      else() # glfw::glfw
+        message(STATUS "Using target 'glfw::glfw'.")
+        target_link_libraries(FrameKitDeps.GLFW INTERFACE glfw::glfw)
       endif()
       set(_have_glfw TRUE)
+
     else()
-      # Fallback to pkg-config
+      message(STATUS "Could not find GLFW via find_package(glfw3). Trying pkg-config.")
+
       find_package(PkgConfig QUIET)
       if(PkgConfig_FOUND)
         pkg_check_modules(GLFW3 IMPORTED_TARGET glfw3)
         if(GLFW3_FOUND)
-          add_library(FrameKitDeps::GLFW INTERFACE IMPORTED)
-          target_link_libraries(FrameKitDeps::GLFW INTERFACE PkgConfig::GLFW3)
+          add_library(FrameKitDeps.GLFW INTERFACE)
+          target_link_libraries(FrameKitDeps.GLFW INTERFACE PkgConfig::GLFW3)
           set(_have_glfw TRUE)
         endif()
       endif()
     endif()
   endif()
+
+  if(NOT _have_glfw)
+    message(FATAL_ERROR "FRAMEKIT_WINDOW_BACKEND_GLFW=ON but GLFW not found "
+                        "(expected existing target FrameKitDeps::GLFW, a glfw/glfw3/glfw::glfw CMake package, or pkg-config 'glfw3').")
+  endif()
 endif()
+message(STATUS "GLFW dependency resolved: ${_have_glfw}")
 
 # ----------------------------- GLFW backend ---------------------------------
 if(FRAMEKIT_WINDOW_BACKEND_GLFW AND _have_glfw)
@@ -74,8 +77,8 @@ if(FRAMEKIT_WINDOW_BACKEND_GLFW AND _have_glfw)
         COMPONENT  Window.GLFW
         SOURCES    ${FRAMEKIT_WINDOW_DOMAIN_DIR}/Backends/GLFW/GlfwWindow.cpp
         HEADERS    ${FRAMEKIT_WINDOW_DOMAIN_DIR}/Backends/GLFW/GlfwWindow.h
+        PUBLIC_LIBS FrameKitDeps.GLFW
         PUBLIC_DEFINES FK_WINDOW_BACKEND_GLFW=1)
-    target_link_libraries(FrameKit.Window.GLFW PRIVATE FrameKitDeps::GLFW)
 elseif(FRAMEKIT_WINDOW_BACKEND_GLFW)
     message(STATUS "GLFW backend enabled but GLFW was not found. Skipping FrameKit.Window.GLFW.")
 endif()
@@ -103,3 +106,5 @@ if(FRAMEKIT_WINDOW_BACKEND_COCOA AND APPLE)
   set_target_properties(FrameKit.Window.Cocoa PROPERTIES LINKER_LANGUAGE CXX)
   target_link_libraries(FrameKit.Window.Cocoa PUBLIC "-framework Cocoa")
 endif()
+
+message(STATUS "========================================================================================")

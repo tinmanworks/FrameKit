@@ -12,6 +12,7 @@
 ]]
 
 # Add each domain here. Keeps root and core clean.
+message(STATUS "=================================== FrameKit Domains ====================================")
 add_subdirectory(Window)
 # add_subdirectory(Gfx)    # later
 # add_subdirectory(Audio)  # later

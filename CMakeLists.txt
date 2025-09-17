@@ -15,10 +15,11 @@
 ]]
 
 # ------------------------------- Pretty banner ------------------------------
-message(STATUS "======================================= FrameKit =======================================")
+message(STATUS "====================================== FrameKit ========================================")
 message(STATUS "Configuring FrameKit...")
 message(STATUS "========================================================================================")
-
+message(STATUS "CMake version: ${CMAKE_VERSION}")
+message(STATUS "")
 cmake_minimum_required(VERSION 3.23)
 
 
@@ -57,11 +58,15 @@ set(FRAMEKIT_BUILD_DIR   "${CMAKE_CURRENT_BINARY_DIR}")
 set(FRAMEKIT_VENDOR_DIR  "${FRAMEKIT_ROOT_DIR}/vendor" CACHE PATH "Vendor libs root")
 
 # ---------------------------------- Project ---------------------------------
+set(PROJECT_NAME "FrameKit")
+set(PROJECT_DESCRIPTION "A simple C++ framework for building applications")
+set(PROJECT_VERSION 0.1.0)
+
 # Languages: enable ObjC++ only on macOS
 if(APPLE)
-  project(FrameKit VERSION 0.1.0 DESCRIPTION "FrameKit C++ framework" LANGUAGES C CXX OBJCXX)
+  project(${PROJECT_NAME} VERSION ${PROJECT_VERSION} DESCRIPTION "${PROJECT_DESCRIPTION}" LANGUAGES C CXX OBJCXX)
 else()
-  project(FrameKit VERSION 0.1.0 DESCRIPTION "FrameKit C++ framework" LANGUAGES C CXX)
+  project(${PROJECT_NAME} VERSION ${PROJECT_VERSION} DESCRIPTION "${PROJECT_DESCRIPTION}" LANGUAGES C CXX)
 endif()
 
 # --------------------------------- Toolchain ---------------------------------
@@ -79,15 +84,25 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_OUTPUT_DIRECTORY}/bin/$<CONFIG>")
 include(GNUInstallDirs)
 
 # ------------------------------ Subdirectories -------------------------------
+add_subdirectory(vendor)
 add_subdirectory(src/FrameKit)
 if(BUILD_SANDBOX)
   add_subdirectory(SandBox)
+endif()
+
+# MSVC: build Debug+Release
+if(MSVC)
+  set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "" FORCE)
 endif()
 
 # ------------------------------ Package Config -------------------------------
 include(CMakePackageConfigHelpers)
 # Config file that sets up imported target namespace
 set(FRAMEKIT_CONFIG_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}/cmake/FrameKit")
+
+install(EXPORT FrameKitTargets
+  NAMESPACE FrameKit::
+  DESTINATION "${FRAMEKIT_CONFIG_INSTALL_DIR}")
 
 configure_package_config_file(
   "${CMAKE_CURRENT_LIST_DIR}/cmake/FrameKitConfig.cmake.in"

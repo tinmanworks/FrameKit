@@ -31,5 +31,11 @@
 
 
 // Debugging and Profiling
+#include "FrameKit/Debug/Log.h"
+#include "FrameKit/Debug/Instrumentor.h"
 
 // FrameKit Utilities
+#include "FrameKit/Utilities/Time.h"
+#include "FrameKit/Utilities/Memory.h"
+#include "FrameKit/Utilities/Utilities.h"
+#include "FrameKit/Utilities/UUID.h"
