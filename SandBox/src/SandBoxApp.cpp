@@ -1,7 +1,4 @@
-
-#include "FrameKit/Application/Application.h"
-#include "FrameKit/Debug/Log.h"
-#include "FrameKit/Debug/Instrumentor.h"
+#include <FrameKit.h>
 
 #include "DemoLayer.h"
 

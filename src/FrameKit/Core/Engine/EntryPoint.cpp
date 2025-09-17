@@ -21,6 +21,8 @@
 extern FrameKit::Application* FrameKit::CreateApplication(FrameKit::ApplicationCommandLineArgs args);
 
 int main(int argc, char** argv) {
+    // TODO: allow configuring log level via command line args or env var
+    // TODO: profiling name via app name or env var
     FK_PROFILE_BEGIN_SESSION("Startup", "FrameKitProfile.json");
 
     try {

@@ -1,55 +1,90 @@
 {
-  "version": 6,
-  "cmakeMinimumRequired": { "major": 3, "minor": 23 },
-
-  "configurePresets": [
-    {
-      "name": "base",
-      "hidden": true,
-      "binaryDir": "${sourceDir}/build/${presetName}",
-      "cacheVariables": {
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-        "CMAKE_OUTPUT_DIRECTORY": "${sourceDir}/_result/${presetName}",
-        "CMAKE_INSTALL_PREFIX": "${sourceDir}/_install/FrameKit/${presetName}",
-        "BUILD_SANDBOX": "ON"
-      }
+    "version": 6,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 23
     },
-
-    {
-      "name": "linux-gcc13-x86_64-debug",
-      "displayName": "Linux • GCC13 • x86_64 • Debug",
-      "inherits": "base",
-      "generator": "Ninja",
-      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" },
-      "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Linux" }
-    },
-    {
-      "name": "linux-gcc13-x86_64-release",
-      "displayName": "Linux • GCC13 • x86_64 • Release",
-      "inherits": "base",
-      "generator": "Ninja",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release",
-        "CMAKE_INTERPROCEDURAL_OPTIMIZATION": "ON"
-      },
-      "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Linux" }
-    },
-
-    {
-      "name": "windows-vs2022-x64",
-      "displayName": "Windows • VS2022 • x64",
-      "inherits": "base",
-      "generator": "Visual Studio 17 2022",
-      "architecture": { "value": "x64" },
-      "cacheVariables": { "CMAKE_CONFIGURATION_TYPES": "Debug;Release" },
-      "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Windows" }
-    }
-  ],
-
-  "buildPresets": [
-    { "name": "linux-gcc13-debug",   "configurePreset": "linux-gcc13-x86_64-debug" },
-    { "name": "linux-gcc13-release", "configurePreset": "linux-gcc13-x86_64-release" },
-    { "name": "windows-vs-Debug",    "configurePreset": "windows-vs2022-x64", "configuration": "Debug" },
-    { "name": "windows-vs-Release",  "configurePreset": "windows-vs2022-x64", "configuration": "Release" }
-  ]
+    "configurePresets": [
+        {
+            "name": "base",
+            "hidden": true,
+            "binaryDir": "${sourceDir}/build/${presetName}",
+            "cacheVariables": {
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "CMAKE_OUTPUT_DIRECTORY": "${sourceDir}/_result/${presetName}",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/_install/FrameKit/${presetName}",
+                "BUILD_SANDBOX": "ON"
+            }
+        },
+        {
+            "name": "linux-gcc13-x86_64-debug",
+            "displayName": "Linux • GCC13 • x86_64 • Debug",
+            "inherits": "base",
+            "generator": "Ninja",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            },
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Linux"
+            }
+        },
+        {
+            "name": "linux-gcc13-x86_64-release",
+            "displayName": "Linux • GCC13 • x86_64 • Release",
+            "inherits": "base",
+            "generator": "Ninja",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_INTERPROCEDURAL_OPTIMIZATION": "ON"
+            },
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Linux"
+            }
+        },
+        {
+            "name": "windows-vs2022-x64",
+            "displayName": "Windows • VS2022 • x64",
+            "inherits": "base",
+            "generator": "Visual Studio 17 2022",
+            "architecture": {
+                "value": "x64"
+            },
+            "cacheVariables": {
+                "CMAKE_CONFIGURATION_TYPES": "Debug;Release"
+            },
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "linux-gcc13-debug",
+            "configurePreset": "linux-gcc13-x86_64-debug",
+            "targets": ["install"]
+        },
+        {
+            "name": "linux-gcc13-release",
+            "configurePreset": "linux-gcc13-x86_64-release",
+            "targets": ["install"]
+        },
+        {
+            "name": "windows-vs-Debug",
+            "configurePreset": "windows-vs2022-x64",
+            "configuration": "Debug",
+            "targets": ["install"]
+        },
+        {
+            "name": "windows-vs-Release",
+            "configurePreset": "windows-vs2022-x64",
+            "configuration": "Release",
+            "targets": ["install"]
+        }
+    ]
 }
