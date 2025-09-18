@@ -78,7 +78,7 @@ namespace FrameKit {
     } // anon
 
     // Create with function-pointer deleter; associate window → plugin in registry
-    static WindowPtr WrapC(const FrameKit_WindowPlugin* P, const WindowDesc& d) {
+    static WindowPtr WrapC(const FrameKit_WindowPlugin* P, const WindowDesc& d, const RendererConfig* rc) {
         FrameKit_WindowDescC cd{ d.title.c_str(), d.width, d.height, d.resizable, d.vsync, d.visible, d.highDPI };
         auto* raw = reinterpret_cast<IWindow*>(P->create(&cd));
         {
@@ -97,7 +97,7 @@ namespace FrameKit {
         const auto* P = sym();
         if (!P || P->abi != FRAMEKIT_WINDOW_PLUGIN_ABI || !P->create || !P->destroy) { closeLib(h); return; }
 
-        auto thunk = [P](const WindowDesc& d) { return WrapC(P, d); }; // capturing OK (std::function)
+        auto thunk = [P](const WindowDesc& d, const RendererConfig* rc) { return WrapC(P, d, rc); }; // capturing OK (std::function)
         const auto id = static_cast<WindowAPI>(P->id);
         if (RegisterWindowBackend(id, P->name ? P->name : "Plugin", std::move(thunk), 200)) {
             g_loaded.push_back(LoadedLib{ h, P->name ? P->name : "Plugin", P->id, P });

@@ -66,6 +66,8 @@ namespace FrameKit {
         virtual bool  getVSync() const = 0;
         virtual void setCursorMode(CursorMode m) = 0;
 
+        virtual void Swap() {}
+        
         using KeyCallback = void(*)(const RawKeyEvent&);
         using MouseBtnCb = void(*)(const RawMouseBtn&);
         using MouseMoveCb = void(*)(const RawMouseMove&);
@@ -81,15 +83,17 @@ namespace FrameKit {
         CloseReqCb    onCloseReq = nullptr;
     };
 
+    struct RendererConfig; 
     using WindowPtr = std::unique_ptr<IWindow, void(*)(IWindow*)>;
-    using CreateWindowFn = std::function<WindowPtr(const WindowDesc&)>;
+    using CreateWindowFn = std::function<WindowPtr(const WindowDesc&, const RendererConfig*)>;
 
     // registry
     bool RegisterWindowBackend(WindowAPI id, std::string_view name, CreateWindowFn createfn, int priority); // priority: higher = preferred
 
     struct WindowAPIInfo { WindowAPI id; std::string name; int priority; };
 
+
     std::vector<WindowAPIInfo> ListWindowBackends();
-    WindowPtr CreateWindow(WindowAPI id, const WindowDesc& d);
+    WindowPtr CreateWindow(WindowAPI id, const WindowDesc& wd, const RendererConfig* renderCfg = nullptr);
 
 } // namespace FrameKit

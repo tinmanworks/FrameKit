@@ -51,7 +51,7 @@ namespace FrameKit {
         return out;
     }
 
-    WindowPtr CreateWindow(WindowAPI id, const WindowDesc& d) {
+    WindowPtr CreateWindow(WindowAPI id, const WindowDesc& d, const RendererConfig* rc) {
 		FK_PROFILE_FUNCTION();
         std::lock_guard<std::mutex> lk(g_mx);
         if (id == WindowAPI::Auto) {
@@ -64,14 +64,14 @@ namespace FrameKit {
             }
             if (bestId != WindowAPI::Auto) {
                 FK_CORE_INFO("Selected Window Backend: {}", ToString(bestId));
-                return g_map[bestId].fn(d);
+                return g_map[bestId].fn(d, rc);
             }
 			FK_CORE_ERROR("No valid window backend found for 'Auto' selection");
             return WindowPtr(nullptr, +[](IWindow*) {});
         }
         auto it = g_map.find(id);
         return (it != g_map.end() && it->second.fn)
-            ? it->second.fn(d)
+            ? it->second.fn(d, rc)
             : WindowPtr(nullptr, +[](IWindow*) {});
     }
 

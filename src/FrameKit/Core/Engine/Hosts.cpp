@@ -16,6 +16,7 @@
 #include "FrameKit/Utilities/Time.h"
 #include "FrameKit/Window/IWindow.h"
 #include "FrameKit/Window/WindowEventBridge.h"
+#include "FrameKit/Gfx/API/RendererConfig.h"
 #include "FrameKit/Debug/Log.h"
 #include "FrameKit/Debug/Instrumentor.h"
 
@@ -110,12 +111,19 @@ namespace FrameKit {
             wd.resizable = spec.WinSettings.resizable;
             wd.highDPI = spec.WinSettings.highDPI;
 
-
             FK_CORE_INFO("Create window: '{}' {}x{} vsync={} resizable={} highDPI={}",
                 wd.title, wd.width, wd.height, wd.vsync, wd.resizable, wd.highDPI);
 
+            FK_CORE_INFO("RendererConfig: api={}", ToString(spec.GfxSettings.api));
+            FK_CORE_INFO("OpenGL Options: major={} minor={} core={} debug={} swapInterval={}",
+                spec.GfxSettings.gl.major,
+                spec.GfxSettings.gl.minor,
+                spec.GfxSettings.gl.core ? "true" : "false",
+                spec.GfxSettings.gl.debug ? "true" : "false",
+                spec.GfxSettings.gl.swapInterval ? "true" : "false");
+                
             // pick best available backend
-            WindowPtr w = CreateWindow(spec.WinSettings.api, wd);
+            WindowPtr w = CreateWindow(spec.WinSettings.api, wd, &spec.GfxSettings);
             if (!w) {
                 FK_CORE_ERROR("CreateWindow failed for api={}", ToString(spec.WinSettings.api));
                 return false;
@@ -175,6 +183,8 @@ namespace FrameKit {
 
             stats_.ts = ts.Seconds();
             stats_.frame = loop_.frame + 1;
+
+            if (win_) win_->Swap();
 
             return loop_.PaceAndEndFrame(app);
         }

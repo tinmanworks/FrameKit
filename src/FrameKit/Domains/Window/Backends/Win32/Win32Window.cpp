@@ -11,6 +11,7 @@
 #include "Win32Window.h"
 #include "FrameKit/Window/WindowRegistry.h"
 #include "FrameKit/Utilities/Utilities.h"
+#include "FrameKit/Gfx/API/RendererConfig.h"
 
 #include <windowsx.h>
 #include <cassert>
@@ -210,7 +211,7 @@ void Win32Window::setCursorMode(CursorMode m) {
 
 static void DeleteWin32(IWindow* w) noexcept { delete w; }
 
-static WindowPtr CreateWin32(const WindowDesc& d) {
+static WindowPtr CreateWin32(const WindowDesc& d, const RendererConfig* rc) {
     auto* w = new Win32Window(d);
     WindowRegistry::Register(w, WindowAPI::Win32, "Win32");
     return WindowPtr(w, &DestroyAndUnregister<&DeleteWin32>);

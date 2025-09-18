@@ -13,7 +13,7 @@
 
 #include "FrameKit/Engine/Defines.h"
 #include "FrameKit/Window/IWindow.h"
-
+#include "FrameKit/Gfx/API/RendererConfig.h"
 #include <cstdint>
 #include <filesystem>
 #include <string>
@@ -57,6 +57,7 @@ namespace FrameKit {
         ApplicationCommandLineArgs CommandLineArgs = {};
         AppMode                    Mode = AppMode::Windowed;
         WindowSettings             WinSettings = {};
+        RendererConfig             GfxSettings = {};
         bool                       Master = false;  // optional, for multi-instance apps or IPC roles
     };
 

@@ -10,6 +10,8 @@
 
 #include "GlfwWindow.h"
 #include "FrameKit/Window/WindowRegistry.h"
+#include "FrameKit/Gfx/API/RendererConfig.h"
+#include "FrameKit/Debug/Log.h"
 
 #include <GLFW/glfw3.h>
 #if defined(_WIN32)
@@ -35,11 +37,18 @@ namespace FrameKit {
     static void glfwInitRef() {
         std::lock_guard<std::mutex> lk(g_glfwMx);
         if (g_glfwRef.fetch_add(1, std::memory_order_acq_rel) == 0) {
-            glfwSetErrorCallback([](int code, const char* desc) { (void)code; (void)desc; /* hook to your logger if desired */ });
-            // Create window only, no GL context. Leave rendering API to the renderer.
-            glfwInit();
+            glfwSetErrorCallback([](int, const char* desc) {
+                // hook to your logger if desired
+                (void)desc;
+            });
+            if (!glfwInit()) {
+                // hard fail; keep internal state consistent
+                g_glfwRef.store(0, std::memory_order_release);
+                assert(false && "glfwInit failed");
+            }
         }
     }
+
     static void glfwTermRef() {
         std::lock_guard<std::mutex> lk(g_glfwMx);
         if (g_glfwRef.fetch_sub(1, std::memory_order_acq_rel) == 1) {
@@ -50,28 +59,24 @@ namespace FrameKit {
     GlfwWindow::GlfwWindow(const WindowDesc& d) {
         glfwInitRef();
 
-        // Hints for a pure window (no client API)
-        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-        glfwWindowHint(GLFW_VISIBLE, d.visible ? GLFW_TRUE : GLFW_FALSE);
+        // Do NOT set GLFW_CLIENT_API here. Caller decides (OpenGL vs NO_API).
+
+        glfwWindowHint(GLFW_VISIBLE,   d.visible   ? GLFW_TRUE : GLFW_FALSE);
         glfwWindowHint(GLFW_RESIZABLE, d.resizable ? GLFW_TRUE : GLFW_FALSE);
 
-        // HiDPI handling
-#if defined(__APPLE__)
+    #if defined(__APPLE__)
         glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, d.highDPI ? GLFW_TRUE : GLFW_FALSE);
-#else
-    // Match logical size to monitor scale where supported
+    #else
         glfwWindowHint(GLFW_SCALE_TO_MONITOR, d.highDPI ? GLFW_TRUE : GLFW_FALSE);
-#endif
+    #endif
 
         m_w = glfwCreateWindow((int)d.width, (int)d.height, d.title.c_str(), nullptr, nullptr);
         if (!m_w) { glfwTermRef(); assert(false && "glfwCreateWindow failed"); return; }
 
-        // Initial logical size
         int ww = 0, hh = 0;
         glfwGetWindowSize(m_w, &ww, &hh);
         m_wd = (uint32_t)ww; m_hd = (uint32_t)hh;
 
-        // Initial content scale
         float sx = 1.0f, sy = 1.0f;
         glfwGetWindowContentScale(m_w, &sx, &sy);
         m_sx = sx; m_sy = sy;
@@ -82,51 +87,53 @@ namespace FrameKit {
 
         // Key input
         glfwSetKeyCallback(m_w, [](GLFWwindow* w, int key, int sc, int action, int mods) {
-            auto* self = (GlfwWindow*)glfwGetWindowUserPointer(w);
-            if (self && self->onKey) self->onKey(RawKeyEvent{ key, sc, action, mods });
-            });
-
+            if (auto* self = (GlfwWindow*)glfwGetWindowUserPointer(w)) {
+                if (self->onKey) self->onKey(RawKeyEvent{ key, sc, action, mods });
+            }
+        });
         // Mouse buttons
         glfwSetMouseButtonCallback(m_w, [](GLFWwindow* w, int button, int action, int mods) {
-            auto* self = (GlfwWindow*)glfwGetWindowUserPointer(w);
-            if (self && self->onMouseBtn) self->onMouseBtn(RawMouseBtn{ button, action, mods });
-            });
-
+            if (auto* self = (GlfwWindow*)glfwGetWindowUserPointer(w)) {
+                if (self->onMouseBtn) self->onMouseBtn(RawMouseBtn{ button, action, mods });
+            }
+        });
         // Cursor motion
         glfwSetCursorPosCallback(m_w, [](GLFWwindow* w, double x, double y) {
-            auto* self = (GlfwWindow*)glfwGetWindowUserPointer(w);
-            if (self && self->onMouseMove) self->onMouseMove(RawMouseMove{ x, y });
-            });
+            if (auto* self = (GlfwWindow*)glfwGetWindowUserPointer(w)) {
+                if (self->onMouseMove) self->onMouseMove(RawMouseMove{ x, y });
+            }
+        });
 
         // Scroll (high-resolution supported by GLFW)
         glfwSetScrollCallback(m_w, [](GLFWwindow* w, double dx, double dy) {
-            auto* self = (GlfwWindow*)glfwGetWindowUserPointer(w);
-            if (self && self->onMouseWheel) self->onMouseWheel(RawMouseWheel{ dx, dy });
-            });
+            if (auto* self = (GlfwWindow*)glfwGetWindowUserPointer(w)) {
+                if (self->onMouseWheel) self->onMouseWheel(RawMouseWheel{ dx, dy });
+            }
+        });
 
         // Resize (logical size)
         glfwSetWindowSizeCallback(m_w, [](GLFWwindow* w, int vw, int vh) {
-            auto* self = (GlfwWindow*)glfwGetWindowUserPointer(w);
-            if (!self) return;
-            self->m_wd = (uint32_t)vw; self->m_hd = (uint32_t)vh;
-            if (self->onResize) self->onResize(Resize{ vw, vh });
-            });
+            if (auto* self = (GlfwWindow*)glfwGetWindowUserPointer(w)) {
+                self->m_wd = (uint32_t)vw; self->m_hd = (uint32_t)vh;
+                if (self->onResize) self->onResize(Resize{ vw, vh });
+            }
+        });
 
         // Content scale changes (per-monitor DPI switches)
         glfwSetWindowContentScaleCallback(m_w, [](GLFWwindow* w, float sx2, float sy2) {
-            auto* self = (GlfwWindow*)glfwGetWindowUserPointer(w);
-            if (!self) return;
-            self->m_sx = sx2; self->m_sy = sy2;
-            });
+            if (auto* self = (GlfwWindow*)glfwGetWindowUserPointer(w)) {
+                self->m_sx = sx2; self->m_sy = sy2;
+            }
+        });
 
         // Close request
         glfwSetWindowCloseCallback(m_w, [](GLFWwindow* w) {
-            auto* self = (GlfwWindow*)glfwGetWindowUserPointer(w);
-            if (!self) return;
-            if (self->onCloseReq) self->onCloseReq(CloseReq{});
-            self->m_close = true;
+            if (auto* self = (GlfwWindow*)glfwGetWindowUserPointer(w)) {
+                if (self->onCloseReq) self->onCloseReq(CloseReq{});
+                self->m_close = true;
+            }
             glfwSetWindowShouldClose(w, GLFW_TRUE);
-            });
+        });
 
         if (d.visible) glfwShowWindow(m_w);
     }
@@ -150,17 +157,16 @@ namespace FrameKit {
     void* GlfwWindow::nativeHandle() const { return m_w; }
 
     void* GlfwWindow::nativeDisplay() const {
-#if defined(_WIN32)
-        // HINSTANCE is not exposed; nullptr is acceptable per IWindow doc for GLFW
-        return nullptr;
-#elif defined(__APPLE__)
+    #if defined(_WIN32)
+        return nullptr; // HINSTANCE not exposed; nullptr acceptable by IWindow doc for GLFW
+    #elif defined(__APPLE__)
         return glfwGetCocoaWindow(m_w); // NSWindow*
-#elif defined(__linux__)
+    #elif defined(__linux__)
         if (auto* dpy = glfwGetX11Display()) return dpy; // Display*
-        return nullptr; // Wayland returns nullptr here
-#else
+        return nullptr; // Wayland: nullptr
+    #else
         return nullptr;
-#endif
+    #endif
     }
 
     uint32_t GlfwWindow::width() const { return m_wd; }
@@ -183,19 +189,60 @@ namespace FrameKit {
         glfwSetInputMode(m_w, GLFW_CURSOR, mode);
     }
 
+    void GlfwWindow::Swap() {
+        if (m_w) glfwSwapBuffers(m_w);
+    }
+
     // ----- registration -----
 
     static void DeleteGlfw(IWindow* w) noexcept { delete w; }
 
-    static WindowPtr CreateGLFW(const WindowDesc& d) {
+    // static WindowPtr CreateGLFW(const WindowDesc& d) {
+    //     auto* w = new GlfwWindow(d);
+    //     WindowRegistry::Register(w, WindowAPI::GLFW, "GLFW");
+    //     return WindowPtr(w, &DestroyAndUnregister<&DeleteGlfw>);
+    // }
+
+    static WindowPtr CreateGLFW_WithRenderCfg(const WindowDesc& d, const RendererConfig* rc) {
+        // Decide API
+        glfwDefaultWindowHints();
+        if (rc && rc->api == GraphicsAPI::OpenGL) {
+            FK_CORE_INFO("Creating GLFW window for OpenGL");
+            const auto& gl = rc->gl;
+            glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, gl.major);
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, gl.minor);
+            glfwWindowHint(GLFW_OPENGL_PROFILE, gl.core ? GLFW_OPENGL_CORE_PROFILE
+                                                        : GLFW_OPENGL_ANY_PROFILE);
+            glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, gl.debug ? GLFW_TRUE : GLFW_FALSE);
+        } else {
+            FK_CORE_INFO("Creating GLFW window for Vulkan/No API");
+            glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+        }
+
         auto* w = new GlfwWindow(d);
         WindowRegistry::Register(w, WindowAPI::GLFW, "GLFW");
+
+        // If OpenGL, bind context and apply swap interval now.
+        if (rc && rc->api == GraphicsAPI::OpenGL) {
+            GLFWwindow* gw = static_cast<GLFWwindow*>(w->nativeHandle());
+            glfwMakeContextCurrent(gw);
+            // Renderer or caller may change it later; set initial swap interval here.
+            if (rc->gl.swapInterval) glfwSwapInterval(d.vsync ? 1 : 0);
+        }
+
         return WindowPtr(w, &DestroyAndUnregister<&DeleteGlfw>);
     }
 
     // explicit registrar callable from core
     extern "C" bool FrameKit_RegisterBackend_GLFW() {
-        return RegisterWindowBackend(WindowAPI::GLFW, "GLFW", &CreateGLFW, 100);
+        return RegisterWindowBackend(
+            WindowAPI::GLFW,
+            "GLFW",
+            [](const WindowDesc& d, const RendererConfig* rc) {
+                return CreateGLFW_WithRenderCfg(d, rc);
+            },
+            100);
     }
 
 } // namespace FrameKit

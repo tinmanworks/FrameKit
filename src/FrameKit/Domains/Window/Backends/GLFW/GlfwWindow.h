@@ -37,6 +37,8 @@ namespace FrameKit {
         bool getVSync() const override;
         void setCursorMode(CursorMode m) override;
 
+        void Swap() override;       
+
     private:
         GLFWwindow* m_w = nullptr;
         uint32_t m_wd = 0, m_hd = 0;
