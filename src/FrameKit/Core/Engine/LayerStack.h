@@ -3,7 +3,7 @@
 // File         : src/FrameKit/Engine/LayerStack.h
 // Author       : George Gil
 // Created      : 2025-09-08
-// Updated      : 2025-09-09
+// Updated      : 2025-09-18
 // License      : Dual Licensed: GPLv3 or Proprietary (c) 2025 George Gil
 // Description  : 
 //      Container for managing engine layers and overlays. Owns Layer* pointers:
@@ -38,6 +38,8 @@ namespace FrameKit
         // If found, calls OnDetach() and deletes the owned pointer
         void PopLayer(Layer* layer);
         void PopOverlay(Layer* overlay);
+
+        FK_NODISCARD inline int Size() const noexcept { return m_Layers.size(); }
 
         // Iteration (non-const)
         FK_NODISCARD std::vector<Layer*>::iterator begin() noexcept { return m_Layers.begin(); }

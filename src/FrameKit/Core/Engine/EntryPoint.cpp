@@ -3,7 +3,7 @@
 // File         : src/FrameKit/Core/EntryPoint.cpp
 // Author       : George Gil
 // Created      : 2025-09-07
-// Updated      : 2025-09-11
+// Updated      : 2025-09-18
 // License      : Dual Licensed: GPLv3 or Proprietary (c) 2025 George Gil
 // Description  :
 //   Entry point for FrameKit applications. Initializes the application,
@@ -25,31 +25,41 @@ int main(int argc, char** argv) {
     // TODO: profiling name via app name or env var
     FK_PROFILE_BEGIN_SESSION("Startup", "FrameKitProfile.json");
 
+    FrameKit::Log::Init(); // core="FrameKit", client="Application"
+    // Optional: tune default levels or sinks here
+     FrameKit::Log::GetCoreLogger()->set_level(FrameKit::LogLevel::Info);
+     FrameKit::Log::GetClientLogger()->set_level(FrameKit::LogLevel::Trace);
+
+    int exit_code = EXIT_SUCCESS;
+
     try {
         FrameKit::ApplicationCommandLineArgs args{ argc, argv };
+        FK_CORE_INFO("Entry: argc={}", argc);
+
         std::unique_ptr<FrameKit::Application> app{ FrameKit::CreateApplication(args) };
         if (!app) {
-            std::cerr << "Failed to create application instance." << std::endl;
-            return EXIT_FAILURE;
+            FK_CORE_ERROR("CreateApplication() returned null");
+            exit_code = EXIT_FAILURE;
         }
+        else {
+            app->GetSpec().CommandLineArgs = args;
+            FK_CORE_INFO("Application created: name='{}'", app->GetSpec().Name);
 
-        // pass args into spec for app access like maybe at Init time
-        app->GetSpec().CommandLineArgs = args;
-
-        // Host (Windowed or Headless) drives: Init -> Run Loop -> Shutdown
-        const int code = FrameKit::Engine(*app);
-        return code;
-
+            // Host (Windowed or Headless) drives: Init -> Run Loop -> Shutdown
+            exit_code = FrameKit::Engine(*app);
+            FK_CORE_INFO("Engine exited with code {}", exit_code);
+        }
     }
     catch (const std::exception& e) {
-        // Log the exception details
-        std::cerr << "Unhandled exception: " << e.what() << std::endl;
-        return EXIT_FAILURE;
+        FK_CORE_CRITICAL("Unhandled exception: {}", e.what());
+        exit_code = EXIT_FAILURE;
     }
     catch (...) {
-        std::cerr << "Unhandled unknown exception." << std::endl;
-        return EXIT_FAILURE;
+        FK_CORE_CRITICAL("Unhandled unknown exception");
+        exit_code = EXIT_FAILURE;
     }
+
     FK_PROFILE_END_SESSION();
-    return 0;
+    FrameKit::Log::UninitClient();
+    return exit_code;
 }

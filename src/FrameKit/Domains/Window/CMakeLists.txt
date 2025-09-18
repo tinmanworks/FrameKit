@@ -42,6 +42,7 @@ message(STATUS "Setting up Window Runtime")
 # -------- Runtime (registry + loader) --------
 add_library(FrameKit.WindowRuntime STATIC
   "${FRAMEKIT_WINDOW_DOMAIN_DIR}/RunTime/WindowRegistry.cpp"
+  "${FRAMEKIT_WINDOW_DOMAIN_DIR}/RunTime/WindowBackendRegistry.cpp"
   "${FRAMEKIT_WINDOW_DOMAIN_DIR}/RunTime/WindowPluginLoader.cpp"
   "${FRAMEKIT_WINDOW_DOMAIN_DIR}/RunTime/WindowBuiltins.cpp")
 add_library(FrameKit::WindowRuntime ALIAS FrameKit.WindowRuntime)

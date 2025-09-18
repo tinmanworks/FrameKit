@@ -3,12 +3,13 @@
 // File         : src/FrameKit/Domains/Window/Backends/GLFW/GlfwWindow.cpp
 // Author       : George Gil
 // Created      : 2025-09-10
-// Updated      : 2025-09-11
+// Updated      : 2025-09-18
 // License      : Dual Licensed: GPLv3 or Proprietary (c) 2025 George Gil
 // Description  : GLFW window backend
 // =============================================================================
 
 #include "GlfwWindow.h"
+#include "FrameKit/Window/WindowRegistry.h"
 
 #include <GLFW/glfw3.h>
 #if defined(_WIN32)
@@ -187,7 +188,9 @@ namespace FrameKit {
     static void DeleteGlfw(IWindow* w) noexcept { delete w; }
 
     static WindowPtr CreateGLFW(const WindowDesc& d) {
-        return WindowPtr(new GlfwWindow(d), &DeleteGlfw);
+        auto* w = new GlfwWindow(d);
+        WindowRegistry::Register(w, WindowAPI::GLFW, "GLFW");
+        return WindowPtr(w, &DestroyAndUnregister<&DeleteGlfw>);
     }
 
     // explicit registrar callable from core

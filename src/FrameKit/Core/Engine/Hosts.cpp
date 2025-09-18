@@ -77,10 +77,35 @@ namespace FrameKit {
 			// optionally load window backends from plugins
             // LoadWindowPluginsFrom(std::filesystem::path(spec.WorkingDirectory) / "plugins");
 
-			// Debug: list available backends
-            FK_CORE_INFO("Window Backends:");
-            for (auto& b : ListWindowBackends()) {
-                FK_CORE_INFO("Backend ID:{} -> {}, Priority: {}", (int)b.id, b.name, b.priority);
+            // Debug: pretty-print registered backends
+            {
+                auto v = ListWindowBackends();
+                std::sort(v.begin(), v.end(),
+                    [](auto& a, auto& b) { return a.priority > b.priority; });
+
+                if (v.empty()) {
+                    FK_CORE_WARN("Window Backends: none registered");
+                }
+                else {
+                    FK_CORE_INFO("Window Backends ({} total):", v.size());
+
+                    auto line = [](std::string a, std::string b, std::string c) {
+#if __cpp_lib_format >= 202106L
+                        return std::format("| {:<10} | {:>8} | {:<12} |", a, b, c);
+#else
+                        return fmt::format("| {:<10} | {:>8} | {:<12} |", a, b, c);
+#endif
+                        };
+
+                    FK_CORE_INFO("+------------+----------+--------------+");
+                    FK_CORE_INFO("{}", line("API", "Priority", "Name"));
+                    FK_CORE_INFO("+------------+----------+--------------+");
+                    for (const auto& b : v) {
+                        FK_CORE_INFO("{}", line(ToString(b.id), std::to_string(b.priority), b.name));
+                    }
+                    FK_CORE_INFO("+------------+----------+--------------+");
+                    FK_CORE_INFO("Requested API: {}", ToString(spec.WinSettings.api));
+                }
             }
 
             WindowDesc wd;

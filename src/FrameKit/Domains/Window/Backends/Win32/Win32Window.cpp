@@ -3,12 +3,13 @@
 // File         : src/FrameKit/Domains/Window/Backends/Win32/Win32Window.cpp
 // Author       : George Gil
 // Created      : 2025-09-10
-// Updated      : 2025-09-11
+// Updated      : 2025-09-18
 // License      : Dual Licensed: GPLv3 or Proprietary (c) 2025 George Gil
 // Description  : Win32 window implementation
 // =============================================================================
 
 #include "Win32Window.h"
+#include "FrameKit/Window/WindowRegistry.h"
 #include "FrameKit/Utilities/Utilities.h"
 
 #include <windowsx.h>
@@ -210,7 +211,9 @@ void Win32Window::setCursorMode(CursorMode m) {
 static void DeleteWin32(IWindow* w) noexcept { delete w; }
 
 static WindowPtr CreateWin32(const WindowDesc& d) {
-    return WindowPtr(new Win32Window(d), &DeleteWin32);
+    auto* w = new Win32Window(d);
+    WindowRegistry::Register(w, WindowAPI::Win32, "Win32");
+    return WindowPtr(w, &DestroyAndUnregister<&DeleteWin32>);
 }
 
 // explicit registrar callable from core

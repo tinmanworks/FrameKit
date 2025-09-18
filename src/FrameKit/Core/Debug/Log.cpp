@@ -106,21 +106,37 @@ namespace FrameKit {
 
     void Log::Init() {
         std::scoped_lock lk(s_Mutex);
+
+        const LogLevel core_lvl = s_CoreLogger ? s_CoreLogger->level() : LogLevel::Trace;
+        const LogLevel client_lvl = s_ClientLogger ? s_ClientLogger->level() : LogLevel::Trace;
+
         if (!s_CoreLogger)   s_CoreLogger = CreateRef<Logger>("FrameKit");
         if (!s_ClientLogger) s_ClientLogger = CreateRef<Logger>("Application");
-        setup_common(s_CoreLogger, "FrameKit.log", LogLevel::Trace);
-        setup_common(s_ClientLogger, "Application.log", LogLevel::Trace);
+
+        setup_common(s_CoreLogger, "FrameKit.log", core_lvl);
+        setup_common(s_ClientLogger, "Application.log", client_lvl);
     }
 
     void Log::InitClient(std::string name) {
         std::scoped_lock lk(s_Mutex);
         const std::string clientName = name.empty() ? "Application" : std::move(name);
 
-        s_CoreLogger = CreateRef<Logger>("FrameKit");
+        const LogLevel core_lvl = s_CoreLogger ? s_CoreLogger->level() : LogLevel::Trace;
+        const LogLevel prev_client_lvl = s_ClientLogger ? s_ClientLogger->level() : LogLevel::Trace;
+
+        if (!s_CoreLogger) s_CoreLogger = CreateRef<Logger>("FrameKit");
         s_ClientLogger = CreateRef<Logger>(clientName);
 
-        setup_common(s_CoreLogger, "FrameKit.log", LogLevel::Trace);
-        setup_common(s_ClientLogger, clientName + ".log", LogLevel::Trace);
+        setup_common(s_CoreLogger, "FrameKit.log", core_lvl);
+        setup_common(s_ClientLogger, clientName + ".log", prev_client_lvl);
+    }
+
+    void Log::UninitClient() {
+        std::scoped_lock lk(s_Mutex);
+        if (!s_ClientLogger) return;
+        s_ClientLogger->set_level(LogLevel::Off);
+        s_ClientLogger->enable_console(false);
+        s_ClientLogger.reset();
     }
 
 } // namespace FrameKit

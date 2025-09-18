@@ -59,7 +59,6 @@ namespace FrameKit {
         inline WindowPtr MakePtr(const FrameKit_WindowPlugin* P, IWindow* raw) {
             auto del = [](IWindow* w) { /* placeholder, replaced below */ };
             // supply a noncapturing deleter pointer by binding P->destroy through a static shim:
-            // but since CreateWindowFn is std::function now, we can keep a capturing deleter:
             struct Ctx {
                 const FrameKit_WindowPlugin* P;
                 static void call(void* ctx, IWindow* w) noexcept {
