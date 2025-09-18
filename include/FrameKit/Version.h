@@ -13,7 +13,7 @@
 #pragma once
 
 #define FK_VERSION_MAJOR 0
-#define FK_VERSION_MINOR 3
+#define FK_VERSION_MINOR 4
 #define FK_VERSION_PATCH 0
 
 // Optional: Derived string versions
