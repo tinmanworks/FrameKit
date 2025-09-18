@@ -14,13 +14,12 @@
 
 #include "FrameKit/Engine/Defines.h"
 #include "FrameKit/Utilities/Time.h"
+#include "FrameKit/Events/Event.h"
 
 #include <string>
 
 namespace FrameKit
 {
-	class Event;
-
     class Layer
     {
     public:

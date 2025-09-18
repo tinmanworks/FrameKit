@@ -15,17 +15,22 @@
 #include "FrameKit/Application/Application.h"
 #include "FrameKit/Utilities/Time.h"
 #include "FrameKit/Window/IWindow.h"
+#include "FrameKit/Window/WindowEventBridge.h"
 #include "FrameKit/Debug/Log.h"
 #include "FrameKit/Debug/Instrumentor.h"
-#include "FrameKit/Window/WindowEventBridge.h"
 
+#include <algorithm>
 #include <chrono>
 #include <thread>
 #include <memory>
 #include <iostream>
+#if __cpp_lib_format >= 202106L
+#include <format>
+#else
+#include <fmt/format.h>
+#endif
 
 namespace FrameKit {
-    // use the real window system
     using FrameKit::IWindow;
     using FrameKit::WindowPtr;
     
@@ -46,15 +51,21 @@ namespace FrameKit {
             frame = 0;
             closing = false;
             frame_start = steady::now();
-            // clock constructed with its own start; first Tick() sets a valid delta
+            FK_CORE_INFO("Loop target: {}", (max_fps > 0.0) ? std::to_string(max_fps) + " fps" : "uncapped");
+
         }
 
         bool PaceAndEndFrame(ApplicationBase& app) {
-			FK_PROFILE_FUNCTION();
+            FK_PROFILE_FUNCTION();
             if (target_dt.Seconds() > 0.0f) {
                 auto spent = Timestep(std::chrono::duration<float>(steady::now() - frame_start));
                 auto remain = target_dt - spent;
-                if (remain.Seconds() > 0.0f) Sleep(remain);
+                if (remain.Seconds() > 0.0f) {
+                    Sleep(remain);
+                }
+                else if (remain.Seconds() < -0.010f) {
+                    FK_CORE_WARN("Frame over budget: {} ms", -remain.Milliseconds());
+                }
             }
             ++frame;
             app.OnFrameEnd();
@@ -77,35 +88,17 @@ namespace FrameKit {
 			// optionally load window backends from plugins
             // LoadWindowPluginsFrom(std::filesystem::path(spec.WorkingDirectory) / "plugins");
 
-            // Debug: pretty-print registered backends
-            {
-                auto v = ListWindowBackends();
-                std::sort(v.begin(), v.end(),
-                    [](auto& a, auto& b) { return a.priority > b.priority; });
+            auto v = ListWindowBackends();
 
-                if (v.empty()) {
-                    FK_CORE_WARN("Window Backends: none registered");
+            if (v.empty()) {
+                FK_CORE_WARN("Window Backends: none registered");
+            }
+            else {
+                FK_CORE_INFO("Window Backends available: {}", v.size());
+                for (const WindowAPIInfo& b : v) {
+                    FK_CORE_INFO("Backend: api={} prio={}", ToString(b.id), b.priority);
                 }
-                else {
-                    FK_CORE_INFO("Window Backends ({} total):", v.size());
-
-                    auto line = [](std::string a, std::string b, std::string c) {
-#if __cpp_lib_format >= 202106L
-                        return std::format("| {:<10} | {:>8} | {:<12} |", a, b, c);
-#else
-                        return fmt::format("| {:<10} | {:>8} | {:<12} |", a, b, c);
-#endif
-                        };
-
-                    FK_CORE_INFO("+------------+----------+--------------+");
-                    FK_CORE_INFO("{}", line("API", "Priority", "Name"));
-                    FK_CORE_INFO("+------------+----------+--------------+");
-                    for (const auto& b : v) {
-                        FK_CORE_INFO("{}", line(ToString(b.id), std::to_string(b.priority), b.name));
-                    }
-                    FK_CORE_INFO("+------------+----------+--------------+");
-                    FK_CORE_INFO("Requested API: {}", ToString(spec.WinSettings.api));
-                }
+                FK_CORE_INFO("Requested API: {}", ToString(spec.WinSettings.api));
             }
 
             WindowDesc wd;
@@ -117,12 +110,28 @@ namespace FrameKit {
             wd.resizable = spec.WinSettings.resizable;
             wd.highDPI = spec.WinSettings.highDPI;
 
+
+            FK_CORE_INFO("Create window: '{}' {}x{} vsync={} resizable={} highDPI={}",
+                wd.title, wd.width, wd.height, wd.vsync, wd.resizable, wd.highDPI);
+
             // pick best available backend
             WindowPtr w = CreateWindow(spec.WinSettings.api, wd);
-            if (!w) return false;
+            if (!w) {
+                FK_CORE_ERROR("CreateWindow failed for api={}", ToString(spec.WinSettings.api));
+                return false;
+            }
             win_ = std::move(w);
             BindWindowToGlobalEvents(*win_);
-            return app.Init();
+            FK_CORE_TRACE("Window created and event bridge bound");
+
+            const bool ok = app.Init();
+            if (!ok) {
+                FK_CORE_ERROR("Application Init failed");
+            }
+            else {
+                FK_CORE_INFO("Application Init ok");
+            }
+            return ok;
         }
 
         bool Tick(ApplicationBase& app) override {
@@ -130,25 +139,38 @@ namespace FrameKit {
             if (loop_.closing) return false;
 
             app.OnBeforePoll();
-            if (!win_) { app.OnAfterPoll(); loop_.closing = true; return false; }
+            if (!win_) {
+                FK_CORE_ERROR("Tick: window invalid");
+                app.OnAfterPoll();
+                loop_.closing = true;
+                return false;
+            }
+
             win_->poll();
-            if (win_->shouldClose()) { app.OnAfterPoll(); loop_.closing = true; return false; }
+            if (win_->shouldClose()) {
+                FK_CORE_INFO("Window requested close");
+                app.OnAfterPoll();
+                loop_.closing = true;
+                return false;
+            }
             app.OnAfterPoll();
 
             loop_.frame_start = CommonLoop::steady::now();
             loop_.clock.Tick();
             Timestep ts = loop_.clock.Delta();
-            ts = (ts.Seconds() > 0.0f) ? ts : Timestep(1.0f / 60.0f);
+            if (ts.Seconds() <= 0.0f) ts = Timestep(1.0f / 60.0f);
 
             app.OnBeforeUpdate(ts);
-            if (!app.OnUpdate(ts)) loop_.closing = true;
+            if (!app.OnUpdate(ts)) {
+                FK_CORE_INFO("App requested shutdown from OnUpdate");
+                loop_.closing = true;
+            }
             app.OnAfterUpdate(ts);
 
             if (!loop_.closing) {
                 app.OnBeforeRender();
                 app.OnRender();
                 app.OnAfterRender();
-                // renderer applies vsync on present; window just stores the flag
             }
 
             stats_.ts = ts.Seconds();
@@ -157,8 +179,11 @@ namespace FrameKit {
             return loop_.PaceAndEndFrame(app);
         }
 
-
-        void SignalClose() override { loop_.closing = true; if (win_) win_->requestClose(); }
+        void SignalClose() override {
+            FK_CORE_INFO("SignalClose");
+            loop_.closing = true;
+            if (win_) win_->requestClose();
+        }
         HostStats Stats() const override { return stats_; }
     };
 
@@ -168,8 +193,11 @@ namespace FrameKit {
         HostStats stats_{};
     public:
         bool Init(ApplicationBase& app) override {
-            loop_.SetupTarget(0.0); // uncapped by default
-            return app.Init();
+            loop_.SetupTarget(0.0);
+            const bool ok = app.Init();
+            if (!ok) FK_CORE_ERROR("Headless: Application Init failed");
+            else     FK_CORE_INFO("Headless: Application Init ok");
+            return ok;
         }
 
         bool Tick(ApplicationBase& app) override {
@@ -183,22 +211,27 @@ namespace FrameKit {
             Timestep ts = loop_.clock.Delta();
 
             app.OnBeforeUpdate(ts);
-            if (!app.OnUpdate(ts)) { loop_.closing = true; }
+            if (!app.OnUpdate(ts)) {
+                FK_CORE_INFO("Headless: App requested shutdown from OnUpdate");
+                loop_.closing = true;
+            }
             app.OnAfterUpdate(ts);
-            
+
             stats_.ts = ts.Seconds();
             stats_.frame = loop_.frame + 1;
 
-			return loop_.PaceAndEndFrame(app);
+            return loop_.PaceAndEndFrame(app);
         }
 
-        void SignalClose() override { loop_.closing = true; }
+        void SignalClose() override { FK_CORE_INFO("Headless SignalClose"); loop_.closing = true; }
         HostStats Stats() const override { return stats_; }
     };
 
     // Factory used by Engine
     std::unique_ptr<IAppHost> MakeHost(AppMode mode) {
         FK_PROFILE_FUNCTION();
+        if (mode == AppMode::Headless) { FK_CORE_INFO("MakeHost: mode=Headless"); }
+        else { FK_CORE_INFO("MakeHost: mode=Windowed"); }
         if (mode == AppMode::Windowed) return std::make_unique<WindowedHost>();
         return std::make_unique<HeadlessHost>();
     }

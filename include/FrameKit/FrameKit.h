@@ -26,9 +26,14 @@
 // FrameKit Info and Version
 #include "FrameKit/Version.h"
 
+// Macros includes
+#include "FrameKit/Engine/Defines.h"
+#include "FrameKit/Engine/Assert.h"
+#include "FrameKit/Engine/PlatformDetection.h"
+
 // FrameKit Core Functionality
 #include "FrameKit/Application/Application.h"
-
+#include "FrameKit/Engine/Layer.h"
 
 // Debugging and Profiling
 #include "FrameKit/Debug/Log.h"

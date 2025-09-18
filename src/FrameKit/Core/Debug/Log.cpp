@@ -3,7 +3,7 @@
 // File         : src/FrameKit/Debug/Log.cpp
 // Author       : George Gil
 // Created      : 2025-09-09
-// Updated      : 2025-09-11
+// Updated      : 2025-09-18
 // License      : Dual Licensed: GPLv3 or Proprietary (c) 2025 George Gil
 // Description  : Implements FrameKit Logger and Log.
 // =============================================================================
