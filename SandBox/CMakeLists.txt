@@ -25,4 +25,5 @@ target_sources(SandBox PRIVATE
 
 target_link_libraries(SandBox 
 FrameKit::FrameKit
+FrameKit::Window.GLFW
 )

@@ -11,10 +11,10 @@
 
 // =============================================================================
 // Project      : FrameKit
-// File         : include/FrameKit.h
+// File         : include/FrameKit/FrameKit.h
 // Author       : George Gil
 // Created      : 2025-09-07
-// Updated      : 2025-09-08
+// Updated      : 2025-09-18
 // License      : Dual Licensed: GPLv3 or Proprietary (c) 2025 George Gil
 // Description  :
 //      Main include file for the FrameKit framework.

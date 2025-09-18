@@ -73,38 +73,56 @@ message(STATUS "GLFW dependency resolved: ${_have_glfw}")
 if(FRAMEKIT_WINDOW_BACKEND_GLFW AND _have_glfw)
     framekit_add_backend(
         DOMAIN     Window
-        TARGET     FrameKit.Window.GLFW
+        TARGET     Window.GLFW
         COMPONENT  Window.GLFW
         SOURCES    ${FRAMEKIT_WINDOW_DOMAIN_DIR}/Backends/GLFW/GlfwWindow.cpp
         HEADERS    ${FRAMEKIT_WINDOW_DOMAIN_DIR}/Backends/GLFW/GlfwWindow.h
         PUBLIC_LIBS FrameKitDeps.GLFW
-        PUBLIC_DEFINES FK_WINDOW_BACKEND_GLFW=1)
+        PUBLIC_DEFINES FK_WINDOW_BACKEND_GLFW_AVAIL=1)
+    if (TARGET Window.GLFW)
+      message(STATUS "Successfully added Window.GLFW backend.")
+      add_library(FrameKit::Window.GLFW ALIAS Window.GLFW)
+    else()
+      message(FATAL_ERROR "Failed to add Window.GLFW backend.")
+    endif()
 elseif(FRAMEKIT_WINDOW_BACKEND_GLFW)
-    message(STATUS "GLFW backend enabled but GLFW was not found. Skipping FrameKit.Window.GLFW.")
+    message(STATUS "GLFW backend enabled but GLFW was not found. Skipping Window.GLFW.")
 endif()
 
 # ----------------------------- Win32 backend --------------------------------
 if(FRAMEKIT_WINDOW_BACKEND_WIN32 AND WIN32)
   framekit_add_backend(
     DOMAIN     Window
-    TARGET     FrameKit.Window.Win32
+    TARGET     Window.Win32
     COMPONENT  Window.Win32
     SOURCES    ${FRAMEKIT_WINDOW_DOMAIN_DIR}/Backends/Win32/Win32Window.cpp
     HEADERS    ${FRAMEKIT_WINDOW_DOMAIN_DIR}/Backends/Win32/Win32Window.h
-    PUBLIC_DEFINES FK_WINDOW_BACKEND_WIN32=1)
+    PUBLIC_DEFINES FK_WINDOW_BACKEND_WIN32_AVAIL=1)
+    if (TARGET Window.Win32)
+      message(STATUS "Successfully added Window.Win32 backend.")
+      add_library(FrameKit::Window.Win32 ALIAS Window.Win32)
+    else()
+      message(FATAL_ERROR "Failed to add Window.Win32 backend.")
+    endif()
 endif()
 
 # ----------------------------- Cocoa backend --------------------------------
 if(FRAMEKIT_WINDOW_BACKEND_COCOA AND APPLE)
   framekit_add_backend(
     DOMAIN     Window
-    TARGET     FrameKit.Window.Cocoa
+    TARGET     Window.Cocoa
     COMPONENT  Window.Cocoa
     SOURCES    ${FRAMEKIT_WINDOW_DOMAIN_DIR}/Backends/Cocoa/CocoaWindow.mm
     HEADERS    ${FRAMEKIT_WINDOW_DOMAIN_DIR}/Backends/Cocoa/CocoaWindow.h
-    PUBLIC_DEFINES FK_WINDOW_BACKEND_COCOA=1)
-  set_target_properties(FrameKit.Window.Cocoa PROPERTIES LINKER_LANGUAGE CXX)
-  target_link_libraries(FrameKit.Window.Cocoa PUBLIC "-framework Cocoa")
+    PUBLIC_DEFINES FK_WINDOW_BACKEND_COCOA_AVAIL=1)
+    if (TARGET Window.Cocoa)
+      message(STATUS "Successfully added Window.Cocoa backend.")
+      add_library(FrameKit::Window.Cocoa ALIAS Window.Cocoa)
+    else()
+      message(FATAL_ERROR "Failed to add Window.Cocoa backend.")
+    endif()
+  set_target_properties(Window.Cocoa PROPERTIES LINKER_LANGUAGE CXX)
+  target_link_libraries(Window.Cocoa PUBLIC "-framework Cocoa")
 endif()
 
 message(STATUS "========================================================================================")

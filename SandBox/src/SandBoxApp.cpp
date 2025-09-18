@@ -1,4 +1,7 @@
-#include <FrameKit.h>
+#include <FrameKit/FrameKit.h>
+
+#define FK_WINDOW_BACKEND_GLFW_ENABLE
+#include <FrameKit/Window.h>
 
 #include "DemoLayer.h"
 
@@ -15,6 +18,7 @@ namespace SandBox {
 
         bool Init() override {
 			FK_PROFILE_FUNCTION();
+            FrameKit::InitializeWindowBackends();
 			PushLayer(new DemoLayer("DemoLayer"));
 			FK_INFO("SandBoxApp Initialized");
             return true;
@@ -33,7 +37,7 @@ FrameKit::Application* FrameKit::CreateApplication(FrameKit::ApplicationCommandL
 	spec.Name = "SandBoxApp";
 	spec.CommandLineArgs = args;
 	spec.Mode = FrameKit::AppMode::Windowed;
-	spec.WinSettings.api = FrameKit::WindowAPI::Win32; 
+	spec.WinSettings.api = FrameKit::WindowAPI::Auto; 
 	spec.WinSettings.title = "SandBoxApp";
 	spec.WinSettings.width = 1280;
 	spec.WinSettings.height = 720;

@@ -8,7 +8,6 @@
 // Description  : GLFW window backend
 // =============================================================================
 
-#include "FrameKit/Window/Window.h"
 #include "GlfwWindow.h"
 
 #include <GLFW/glfw3.h>

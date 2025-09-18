@@ -3,14 +3,14 @@
 // File         : include/FrameKit/Window/WindowEventBridge.h
 // Author       : George Gil
 // Created      : 2025-09-10
-// Updated      : 2025-09-10
+// Updated      : 2025-09-18
 // License      : Dual Licensed: GPLv3 or Proprietary (c) 2025 George Gil
 // Description  : Binds window events to global event handler
 // =============================================================================
 
 #pragma once
 
-#include "FrameKit/Window/Window.h"
+#include "FrameKit/Window/IWindow.h"
 #include "FrameKit/Events/WindowEvent.h"
 #include "FrameKit/Events/KeyEvent.h"
 #include "FrameKit/Events/MouseEvent.h"

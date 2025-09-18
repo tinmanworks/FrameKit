@@ -3,7 +3,7 @@
 // File         : src/FrameKit/Engine/Host.cpp
 // Author       : George Gil
 // Created      : 2025-09-07
-// Updated      : 2025-09-13
+// Updated      : 2025-09-18
 // License      : Dual Licensed: GPLv3 or Proprietary (c) 2025 George Gil
 // Description  :
 //      Implements application hosts (Windowed and Headless) for the FrameKit framework.
@@ -14,10 +14,9 @@
 #include "IAppHost.h"
 #include "FrameKit/Application/Application.h"
 #include "FrameKit/Utilities/Time.h"
-#include "FrameKit/Window/Window.h"
+#include "FrameKit/Window/IWindow.h"
 #include "FrameKit/Debug/Log.h"
 #include "FrameKit/Debug/Instrumentor.h"
-#include "FrameKit/Window/WindowBuiltins.h"
 #include "FrameKit/Window/WindowEventBridge.h"
 
 #include <chrono>
@@ -74,7 +73,7 @@ namespace FrameKit {
             const auto& spec = app.GetSpec();
             loop_.SetupTarget(0.0); // uncapped for now; wire max FPS from spec later
 
-            RegisterBuiltInWindowBackends();
+            //RegisterBuiltInWindowBackends();
 			// optionally load window backends from plugins
             // LoadWindowPluginsFrom(std::filesystem::path(spec.WorkingDirectory) / "plugins");
 

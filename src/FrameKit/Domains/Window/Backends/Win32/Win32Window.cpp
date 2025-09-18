@@ -9,7 +9,6 @@
 // =============================================================================
 
 #include "Win32Window.h"
-#include "FrameKit/Window/Window.h"
 #include "FrameKit/Utilities/Utilities.h"
 
 #include <windowsx.h>

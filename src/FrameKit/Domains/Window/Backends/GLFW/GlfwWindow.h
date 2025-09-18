@@ -10,7 +10,7 @@
 
 #pragma once
 
-#include "FrameKit/Window/Window.h"
+#include "FrameKit/Window/IWindow.h"
 
 struct GLFWwindow;
 

@@ -1,9 +1,9 @@
 // =============================================================================
 // Project      : FrameKit
-// File         : include/FrameKit/Window/Window.h
+// File         : include/FrameKit/Window/IWindow.h
 // Author       : George Gil
 // Created      : 2025-09-10
-// Updated      : 2025-09-11
+// Updated      : 2025-09-18
 // License      : Dual Licensed: GPLv3 or Proprietary (c) 2025 George Gil
 // Description  : Window abstraction and backend registry
 // =============================================================================

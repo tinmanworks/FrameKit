@@ -8,7 +8,7 @@
 // Description  : Dynamically loads window backend plugins
 // =============================================================================
 
-#include "FrameKit/Window/Window.h"
+#include "FrameKit/Window/IWindow.h"
 #include "FrameKit/Window/WindowPlugin.h"
 
 #include <filesystem>

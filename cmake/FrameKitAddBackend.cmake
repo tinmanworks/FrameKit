@@ -38,9 +38,9 @@ function(framekit_add_backend)
   endif()
 
   # Make the runtime depend on this backend and see the same defines.
-  if(TARGET FrameKit.${B_DOMAIN}Runtime)
-    target_link_libraries(FrameKit.${B_DOMAIN}Runtime PUBLIC ${B_TARGET})
-  endif()
+  # if(TARGET FrameKit.${B_DOMAIN}Runtime)
+  #   target_link_libraries(FrameKit.${B_DOMAIN}Runtime PUBLIC ${B_TARGET})
+  # endif()
   
   # Default IDE folder
   if(NOT B_FOLDER)

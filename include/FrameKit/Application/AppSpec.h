@@ -3,7 +3,7 @@
 // File         : include/FrameKit/Application/AppSpec.h
 // Author       : George Gil
 // Created      : 2025-09-07
-// Updated      : 2025-09-11
+// Updated      : 2025-09-18
 // License      : Dual Licensed: GPLv3 or Proprietary (c) 2025 George Gil
 // Description  :
 //      Defines application specifications, optional settings, and command line arguments.
@@ -12,7 +12,7 @@
 #pragma once
 
 #include "FrameKit/Engine/Defines.h"
-#include "FrameKit/Window/Window.h"
+#include "FrameKit/Window/IWindow.h"
 
 #include <cstdint>
 #include <filesystem>

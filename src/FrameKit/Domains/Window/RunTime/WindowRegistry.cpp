@@ -3,12 +3,12 @@
 // File         : src/FrameKit/Domains/Window/RunTime/WindowRegistry.cpp
 // Author       : George Gil
 // Created      : 2025-09-10
-// Updated      : 2025-09-11
+// Updated      : 2025-09-18
 // License      : Dual Licensed: GPLv3 or Proprietary (c) 2025 George Gil
 // Description  : Window backend registry
 // =============================================================================
 
-#include "FrameKit/Window/Window.h"
+#include "FrameKit/Window/IWindow.h"
 #include "FrameKit/Debug/Log.h"
 #include "FrameKit/Debug/Instrumentor.h"
 
