@@ -19,9 +19,6 @@ namespace FrameKit {
     int Engine(ApplicationBase& app)  {
         FK_CORE_INFO("Engine start: app='{}' mode={}", app.GetSpec().Name, static_cast<int>(app.GetSpec().Mode));
 
-        app.Init();
-        FK_CORE_TRACE("App.Init done");
-
         auto host = MakeHost(app.GetSpec().Mode);
         if (!host) {
             if (app.GetSpec().Mode == AppMode::Headless) { FK_CORE_ERROR("MakeHost failed: mode=Headless"); }
