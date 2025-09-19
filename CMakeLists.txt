@@ -45,6 +45,9 @@ option(FRAMEKIT_WINDOW_BACKEND_WIN32 "Build Win32 backend" ${WIN32})
 option(FRAMEKIT_WINDOW_BACKEND_COCOA "Build Cocoa backend" ${APPLE})
 option(BUILD_WINDOW_PLUGINS          "Build loadable window plugins" OFF)
 
+# ----------------------------- MediaKit options ------------------------------
+option(FK_MEDIA_ENABLE_STB "Enable stb_image backend" ON)
+option(FK_MEDIA_ENABLE_FFMPEG "Enable FFmpeg backends" ON)
 
 # ----------------------------------------------------------------------------
 # ------------------------------ Main Build ----------------------------------

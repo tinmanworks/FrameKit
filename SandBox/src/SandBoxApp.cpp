@@ -11,10 +11,18 @@
 
 #include <FrameKit/FrameKit.h>
 
-#define FK_WINDOW_BACKEND_GLFW_ENABLE
+#define FK_WINDOW_BACKEND_GLFW_ENABLE 1
 #include <FrameKit/Window.h>
 
 #include "DemoLayer.h"
+#include "VideoLayer.h"
+
+#if defined(FK_PLATFORM_WINDOWS)
+#include <windows.h>
+#elif defined(FK_PLATFORM_LINUX)
+#include <unistd.h>
+#endif
+
 
 namespace SandBox {
 
@@ -22,28 +30,31 @@ namespace SandBox {
     public:
         explicit SandBoxApp(const FrameKit::ApplicationSpecification& spec)
             : FrameKit::Application(spec) {
-            FrameKit::Log::InitClient("SandBoxApp");
+            FrameKit::Log::InitClient("SandBox Application");
             FrameKit::Log::GetClientLogger()->set_level(FrameKit::LogLevel::Info);
+
+            FrameKit::InitializeWindowBackends();
         }
 
         bool Init() override {
             FK_PROFILE_FUNCTION();
-
-            FrameKit::InitializeWindowBackends();
 
             auto backends = FrameKit::ListWindowBackends();
             if (backends.empty()) {
                 FK_WARN("No window backends registered");
             }
             else {
-                FK_INFO("Window backends registered: {}", backends.size());
+                FK_INFO("FDViz: window backends registered: {}", backends.size());
                 for (const auto& b : backends) {
-                    FK_INFO("api={} priority={} name={}", FrameKit::ToString(b.id), b.priority, b.name);
+                    FK_INFO("Api={} priority={} name={}",
+                        FrameKit::ToString(b.id), b.priority, b.name);
                 }
             }
-
+            
+            PushLayer(new VideoLayer("DroneVideoPort"));
             PushLayer(new DemoLayer("DemoLayer"));
-            FK_INFO("SandBoxApp initialized");
+
+            FK_INFO("SandBox Application initialized");
             return true;
         }
 
@@ -57,15 +68,16 @@ namespace SandBox {
 FrameKit::Application* FrameKit::CreateApplication(FrameKit::ApplicationCommandLineArgs args) {
     ApplicationSpecification spec;
     spec.Name = "SandBoxApp";
+    spec.WorkingDirectory = ".";
     spec.CommandLineArgs = args;
     spec.Mode = FrameKit::AppMode::Windowed;
-    spec.WinSettings.api = FrameKit::WindowAPI::Auto;
+    spec.WinSettings.api = FrameKit::WindowAPI::GLFW;
     spec.WinSettings.title = "SandBoxApp";
     spec.WinSettings.width = 1280;
     spec.WinSettings.height = 720;
     spec.WinSettings.vsync = true;
     spec.WorkingDirectory = std::filesystem::current_path();
-    // spec.Master = false; // optional for multi-instance/IPC roles
+     //spec.Master = false; // optional for multi-instance/IPC roles
 
     return new SandBox::SandBoxApp(spec);
 }

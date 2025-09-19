@@ -16,17 +16,43 @@ cmake_minimum_required(VERSION 3.23)
 
 # -------- Public headers (installed) --------
 file(GLOB_RECURSE FRAMEKIT_PUBLIC_HEADERS CONFIGURE_DEPENDS
-  "${FRAMEKIT_INCLUDE_DIR}/*.h" "${FRAMEKIT_INCLUDE_DIR}/*.hpp" "${FRAMEKIT_INCLUDE_DIR}/*.inl")
+  "${FRAMEKIT_INCLUDE_DIR}/*.h" "${FRAMEKIT_INCLUDE_DIR}/*.hpp" "${FRAMEKIT_INCLUDE_DIR}/*.inl"
+)
 
 # -------- Core sources/headers only (no domains/backends) --------
 file(GLOB_RECURSE FRAMEKIT_CORE_SOURCES  CONFIGURE_DEPENDS
-  "${FRAMEKIT_SRC_DIR}/FrameKit/Core/*.cpp" "${FRAMEKIT_SRC_DIR}/FrameKit/Core/*.cxx")
+  "${FRAMEKIT_SRC_DIR}/FrameKit/Core/*.cpp" "${FRAMEKIT_SRC_DIR}/FrameKit/Core/*.cxx"
+)
 file(GLOB_RECURSE FRAMEKIT_CORE_HEADERS  CONFIGURE_DEPENDS
-  "${FRAMEKIT_SRC_DIR}/FrameKit/Core/*.h" "${FRAMEKIT_SRC_DIR}/FrameKit/Core/*.[hi]pp" "${FRAMEKIT_SRC_DIR}/FrameKit/Core/*.inl")
+  "${FRAMEKIT_SRC_DIR}/FrameKit/Core/*.h" "${FRAMEKIT_SRC_DIR}/FrameKit/Core/*.[hi]pp" "${FRAMEKIT_SRC_DIR}/FrameKit/Core/*.inl"
+)
+
+list(FILTER FRAMEKIT_CORE_SOURCES EXCLUDE REGEX ".*/FrameKit/Core/MediaKit/.*")
+list(FILTER FRAMEKIT_CORE_HEADERS EXCLUDE REGEX ".*/FrameKit/Core/MediaKit/.*")
+
+# MediaKit sources
+set(FRAMEKIT_MEDIAKIT_SOURCES
+  ${FRAMEKIT_SRC_DIR}/FrameKit/Core/MediaKit/ImageLoader_Stb.cpp
+  ${FRAMEKIT_SRC_DIR}/FrameKit/Core/MediaKit/VideoReader_FFmpeg.cpp
+  ${FRAMEKIT_SRC_DIR}/FrameKit/Core/MediaKit/Player_FFmpeg.cpp
+  ${FRAMEKIT_SRC_DIR}/FrameKit/Core/MediaKit/MediaKit.cpp
+)
+
+# Filter by options
+if(NOT FK_MEDIA_ENABLE_STB)
+  list(REMOVE_ITEM FRAMEKIT_MEDIAKIT_SOURCES
+       ${FRAMEKIT_SRC_DIR}/FrameKit/Core/MediaKit/ImageLoader_Stb.cpp)
+endif()
+if(NOT FK_MEDIA_ENABLE_FFMPEG)
+  list(REMOVE_ITEM FRAMEKIT_MEDIAKIT_SOURCES
+       ${FRAMEKIT_SRC_DIR}/FrameKit/Core/MediaKit/VideoReader_FFmpeg.cpp
+       ${FRAMEKIT_SRC_DIR}/FrameKit/Core/MediaKit/Player_FFmpeg.cpp)
+endif()
 
 # IDE filters
 source_group(TREE "${FRAMEKIT_ROOT_DIR}" FILES
-  ${FRAMEKIT_CORE_SOURCES} ${FRAMEKIT_CORE_HEADERS} ${FRAMEKIT_PUBLIC_HEADERS})
+  ${FRAMEKIT_CORE_SOURCES} ${FRAMEKIT_CORE_HEADERS}
+  ${FRAMEKIT_PUBLIC_HEADERS} ${FRAMEKIT_MEDIAKIT_SOURCES})
 
 # -------- Target: FrameKit (static) --------
 add_library(FrameKit STATIC
@@ -34,6 +60,7 @@ add_library(FrameKit STATIC
   ${FRAMEKIT_CORE_SOURCES}
   ${FRAMEKIT_PUBLIC_HEADERS})
 add_library(FrameKit::FrameKit ALIAS FrameKit)
+target_sources(FrameKit PRIVATE ${FRAMEKIT_MEDIAKIT_SOURCES})
 set_target_properties(FrameKit PROPERTIES FOLDER "FrameKit" POSITION_INDEPENDENT_CODE ON)
 
 target_include_directories(FrameKit
@@ -42,6 +69,45 @@ target_include_directories(FrameKit
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
   PRIVATE "${FRAMEKIT_SRC_DIR}")
 
+# stb_image: header-only, keep private
+if(FK_MEDIA_ENABLE_STB)
+  if(EXISTS "${FRAMEKIT_VENDOR_DIR}/stb_image")
+    target_include_directories(FrameKit PRIVATE ${FRAMEKIT_VENDOR_DIR}/stb_image)
+    target_compile_definitions(FrameKit PRIVATE FK_MEDIA_ENABLE_STB=1)
+  else()
+    message(WARNING "FK_MEDIA_ENABLE_STB=ON but ${FRAMEKIT_VENDOR_DIR}/stb_image not found.")
+  endif()
+endif()
+
+message(STATUS "FFMpeg linkage: ${FK_MEDIA_ENABLE_FFMPEG}")
+
+# ---- FFmpeg linkage (single block) ----
+if(FK_MEDIA_ENABLE_FFMPEG)
+  if(MSVC)
+    find_package(FFMPEG REQUIRED)             # via vcpkg toolchain
+    target_include_directories(FrameKit PRIVATE ${FFMPEG_INCLUDE_DIRS})
+    if(FFMPEG_LIBRARY_DIRS)
+      target_link_directories(FrameKit PRIVATE ${FFMPEG_LIBRARY_DIRS})
+    endif()
+    target_link_libraries(FrameKit PRIVATE ${FFMPEG_LIBRARIES})
+  else()
+    find_package(PkgConfig QUIET)
+    if(PKG_CONFIG_FOUND)
+      pkg_check_modules(FFMPEG REQUIRED IMPORTED_TARGET
+        libavformat libavcodec libswscale libswresample)
+      target_link_libraries(FrameKit PRIVATE PkgConfig::FFMPEG)
+    else()
+      message(WARNING "pkg-config not found; FFmpeg disabled on this platform.")
+      set(FK_MEDIA_ENABLE_FFMPEG OFF)
+    endif()
+  endif()
+
+  if(FK_MEDIA_ENABLE_FFMPEG)
+    target_compile_definitions(FrameKit PRIVATE FK_MEDIA_ENABLE_FFMPEG=1)
+  endif()
+endif()
+
+# Common compile options
 target_compile_features(FrameKit PUBLIC cxx_std_20)
 
 if(MSVC)
