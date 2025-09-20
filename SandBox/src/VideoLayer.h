@@ -41,6 +41,7 @@ namespace SandBox {
         int       m_TexH{ 0 };
 
     private:
+        std::atomic<bool> m_Alive{ true };
         std::mutex              m_FrameMtx;
         std::vector<uint8_t>    m_PendingRGBA;
         int                     m_PendingW{ 0 }, m_PendingH{ 0 };

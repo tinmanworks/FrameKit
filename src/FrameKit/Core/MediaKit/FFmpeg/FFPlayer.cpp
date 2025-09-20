@@ -184,6 +184,12 @@ bool FFPlayer::getVideo(VideoFrame& out) {
     out = std::move(vq_.front()); vq_.pop_front();
     return true;
 }
+
+void FFPlayer::setVideoSink(VideoSink s) {
+    std::lock_guard<std::mutex> lk(sinkMtx);
+    sinkV_ = std::move(s);
+}
+
 void FFPlayer::demuxDecodeThread() {
     VideoFrame vf;
     SwsState sws;
@@ -262,7 +268,12 @@ void FFPlayer::presentThread() {
                 if (!vq_.empty()) vq_.pop_front();
             }
             lastPTS_ = pts;
-            if (sinkV_) sinkV_(fr);
+            VideoSink local;
+            {
+                std::lock_guard<std::mutex> lk(sinkMtx);
+                local = sinkV_;
+            }
+            if (local) local(fr);
             continue;
         }
 

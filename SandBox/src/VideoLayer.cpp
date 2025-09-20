@@ -36,12 +36,12 @@ namespace SandBox {
         m_Paused = false;
 
         m_Player->setVideoSink([this](const FrameKit::MediaKit::VideoFrame& f) {
-            // Expect RGBA/BGRA per cfg.outFmt
+            if (!m_Alive.load(std::memory_order_acquire)) return;
             if (f.planes.empty()) return;
             std::lock_guard<std::mutex> lk(m_FrameMtx);
             m_PendingW = f.info.w;
             m_PendingH = f.info.h;
-            m_PendingRGBA = f.planes[0];     // copy; small and safe
+            m_PendingRGBA = f.planes[0]; // copy
             m_HasPending.store(true, std::memory_order_release);
             });
 
@@ -49,9 +49,15 @@ namespace SandBox {
 
     void VideoLayer::OnDetach() {
         FK_PROFILE_FUNCTION();
+        m_Alive.store(false, std::memory_order_release);
+        if (m_Player) {
+            m_Player->setVideoSink(nullptr);   // <-- prevent callbacks
+            m_Player->close();
+            m_Player.reset();
+        }
         if (m_Tex) { DestroyTexture(m_Tex); m_Tex = 0; }
-        if (m_Player) m_Player->close();
-        m_Player.reset();
+        m_HasPending.store(false);
+        m_PendingRGBA.clear();
     }
 
     void VideoLayer::OnAsyncUpdate() { FK_PROFILE_FUNCTION(); }

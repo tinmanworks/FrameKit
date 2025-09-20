@@ -20,7 +20,7 @@ namespace FrameKit::MediaKit {
         double time() const override;
         bool getVideo(VideoFrame& out) override;
         bool getAudio(AudioFrame&) override { return false; }
-        void setVideoSink(VideoSink s) override { sinkV_ = std::move(s); }
+        void setVideoSink(VideoSink s) override;
         void setAudioSink(AudioSink) override {}
         void setExternalTime(double t) override { extClock_ = t; }
     private:
@@ -34,6 +34,7 @@ namespace FrameKit::MediaKit {
         std::thread thRead_, thPresent_;
         std::atomic<bool> quit_{ false };
         std::deque<VideoFrame> vq_;
+        std::mutex sinkMtx;
         mutable std::mutex m_;
         std::condition_variable cv_;
         double clock_{ 0.0 }, extClock_{ 0.0 };
