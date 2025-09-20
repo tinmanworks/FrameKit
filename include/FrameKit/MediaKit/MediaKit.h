@@ -148,6 +148,7 @@ namespace FrameKit::MediaKit {
         virtual void stop() = 0;
         virtual bool seek(double s, bool exact = false) = 0;
         virtual bool setRate(double rate) = 0;     // optional 0.5..2.0, may be stubbed
+        virtual double getRate() = 0;
         virtual void setLoop(bool loop) = 0;
 
         // Query

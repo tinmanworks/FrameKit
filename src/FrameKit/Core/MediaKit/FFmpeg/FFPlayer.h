@@ -14,6 +14,7 @@ namespace FrameKit::MediaKit {
         void play() override; void pause() override; void stop() override;
         bool seek(double s, bool exact = false) override;
         bool setRate(double) override;
+        double getRate() override;
         void setLoop(bool v) override { loop_ = v; }
         PlayerState state() const override { return state_; }
         MediaInfo info() const override { return { readerInfo_ }; }
@@ -34,6 +35,7 @@ namespace FrameKit::MediaKit {
         std::thread thRead_, thPresent_;
         std::atomic<bool> quit_{ false };
         std::deque<VideoFrame> vq_;
+        std::mutex rdrMtx_;   // guards rdr_->open/read/seek/close
         std::mutex sinkMtx;
         mutable std::mutex m_;
         std::condition_variable cv_;

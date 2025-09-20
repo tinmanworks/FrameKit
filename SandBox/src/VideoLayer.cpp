@@ -105,8 +105,13 @@ namespace SandBox {
 
         ImGui::SameLine();
         ImGui::SetNextItemWidth(120.0f);
-        if (ImGui::SliderFloat("Rate", reinterpret_cast<float*>(&m_Rate), 0.25f, 2.0f, "%.2fx"))
+        float rate_f = static_cast<float>(m_Rate);
+        if (ImGui::SliderFloat("Rate", &rate_f, 0.10f, 5.00f, "%.2fx")) {
+            m_Rate = static_cast<double>(rate_f);
             m_Player->setRate(m_Rate);
+            FK_WARN("Video Speed Changed to {}", m_Rate);
+            FK_WARN("Actual Rate {}", m_Player->getRate());
+        }
 
         if (ImGui::Checkbox("Loop", &m_Loop)) m_Player->setLoop(m_Loop);
 

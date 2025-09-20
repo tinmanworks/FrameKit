@@ -97,8 +97,11 @@ bool FFPlayer::open(std::string_view path, const PlayerConfig& cfg) {
     close();
     state_ = PlayerState::Opening;
     cfg_ = cfg;
-    rdr_ = std::make_unique<FFVideoReader>();
-    readerInfo_ = rdr_->open(path);
+    {
+        std::lock_guard<std::mutex> lk(rdrMtx_);
+        rdr_ = std::make_unique<FFVideoReader>();
+        readerInfo_ = rdr_->open(path);
+    }
     if (!readerInfo_.video) { 
         rdr_.reset(); 
         state_ = PlayerState::Error; 
@@ -121,7 +124,11 @@ void FFPlayer::close() {
     quit_ = true; cv_.notify_all();
     if (thRead_.joinable()) thRead_.join();
     if (thPresent_.joinable()) thPresent_.join();
-    rdr_.reset();
+    {
+        std::lock_guard<std::mutex> lk(rdrMtx_);
+        if (rdr_) rdr_->close();
+        rdr_.reset();
+    }
     std::scoped_lock lk(m_); vq_.clear();
     state_ = PlayerState::Idle;
 }
@@ -147,6 +154,7 @@ void FFPlayer::pause() {
 void FFPlayer::stop() {
     pause();
     seek(0.0, false);
+    pause();
     state_ = PlayerState::Stopped;
 }
 
@@ -159,18 +167,26 @@ bool FFPlayer::setRate(double r) {
     return true;
 }
 
+double FFPlayer::getRate() {
+    return rate_;
+}
+
 bool FFPlayer::seek(double s, bool exact) {
+    pause();
     {
-        std::scoped_lock lk(m_);
+        std::lock_guard<std::mutex> lk(m_);
         vq_.clear();
-        lastPTS_ = s;
     }
-    // retime clock to seek target
-    baseMedia_ = s;
-    baseWall_ = Clock::now();
-    bool ok = rdr_ && rdr_->seek(s, exact);
+    {
+        std::lock_guard<std::mutex> lk(rdrMtx_);   // <-- serialize with read()
+        lastPTS_ = s;
+        baseMedia_ = s;
+        baseWall_ = Clock::now();
+        if (rdr_) rdr_->seek(s, exact);
+    }
     cv_.notify_all();
-    return ok;
+    play();
+    return true;
 }
 
 double FFPlayer::time() const {
@@ -209,7 +225,11 @@ void FFPlayer::demuxDecodeThread() {
             if ((int)vq_.size() >= cfg_.videoQueue) { lk.unlock(); std::this_thread::sleep_for(std::chrono::milliseconds(2)); continue; }
         }
 
-        bool ok = rdr_->read(&vf, nullptr);
+        bool ok;
+        {
+            std::lock_guard<std::mutex> lk(rdrMtx_);
+            ok = rdr_->read(&vf, nullptr);
+        }
         if (!ok) {
             if (loop_) { rdr_->seek(0.0, false); continue; }
             state_ = PlayerState::Ended;
