@@ -14,11 +14,14 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 
+add_subdirectory(vendor_sandbox)
 
 add_executable(SandBox)
 
 target_sources(SandBox PRIVATE
   "${CMAKE_CURRENT_LIST_DIR}/src/SandBoxApp.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/src/ImGui/ImGuiLayer.h"
+  "${CMAKE_CURRENT_LIST_DIR}/src/ImGui/ImGuiLayer.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/src/DemoLayer.h"
   "${CMAKE_CURRENT_LIST_DIR}/src/VideoLayer.h"
   "${CMAKE_CURRENT_LIST_DIR}/src/DemoLayer.cpp"
@@ -29,4 +32,5 @@ target_link_libraries(SandBox
 FrameKit::FrameKit
 FrameKit::Window.GLFW
 FrameKit::Window.Win32
+imgui
 )

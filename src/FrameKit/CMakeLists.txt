@@ -32,6 +32,12 @@ list(FILTER FRAMEKIT_CORE_HEADERS EXCLUDE REGEX ".*/FrameKit/Core/MediaKit/.*")
 
 # MediaKit sources
 set(FRAMEKIT_MEDIAKIT_SOURCES
+  ${FRAMEKIT_SRC_DIR}/FrameKit/Core/MediaKit/FFmpeg/FFCommon.h
+  ${FRAMEKIT_SRC_DIR}/FrameKit/Core/MediaKit/FFmpeg/FFCommon.cpp
+  ${FRAMEKIT_SRC_DIR}/FrameKit/Core/MediaKit/FFmpeg/FFPlayer.h
+  ${FRAMEKIT_SRC_DIR}/FrameKit/Core/MediaKit/FFmpeg/FFPlayer.cpp
+  ${FRAMEKIT_SRC_DIR}/FrameKit/Core/MediaKit/FFmpeg/FFVideoReader.h
+  ${FRAMEKIT_SRC_DIR}/FrameKit/Core/MediaKit/FFmpeg/FFVideoReader.cpp
   ${FRAMEKIT_SRC_DIR}/FrameKit/Core/MediaKit/ImageLoader_Stb.cpp
   ${FRAMEKIT_SRC_DIR}/FrameKit/Core/MediaKit/VideoReader_FFmpeg.cpp
   ${FRAMEKIT_SRC_DIR}/FrameKit/Core/MediaKit/Player_FFmpeg.cpp
@@ -45,8 +51,15 @@ if(NOT FK_MEDIA_ENABLE_STB)
 endif()
 if(NOT FK_MEDIA_ENABLE_FFMPEG)
   list(REMOVE_ITEM FRAMEKIT_MEDIAKIT_SOURCES
-       ${FRAMEKIT_SRC_DIR}/FrameKit/Core/MediaKit/VideoReader_FFmpeg.cpp
-       ${FRAMEKIT_SRC_DIR}/FrameKit/Core/MediaKit/Player_FFmpeg.cpp)
+        ${FRAMEKIT_SRC_DIR}/FrameKit/Core/MediaKit/VideoReader_FFmpeg.cpp
+        ${FRAMEKIT_SRC_DIR}/FrameKit/Core/MediaKit/Player_FFmpeg.cpp
+        ${FRAMEKIT_SRC_DIR}/FrameKit/Core/MediaKit/FFmpeg/FFCommon.h
+        ${FRAMEKIT_SRC_DIR}/FrameKit/Core/MediaKit/FFmpeg/FFCommon.cpp
+        ${FRAMEKIT_SRC_DIR}/FrameKit/Core/MediaKit/FFmpeg/FFPlayer.h
+        ${FRAMEKIT_SRC_DIR}/FrameKit/Core/MediaKit/FFmpeg/FFPlayer.cpp
+        ${FRAMEKIT_SRC_DIR}/FrameKit/Core/MediaKit/FFmpeg/FFVideoReader.h
+        ${FRAMEKIT_SRC_DIR}/FrameKit/Core/MediaKit/FFmpeg/FFVideoReader.cpp
+  )
 endif()
 
 # IDE filters

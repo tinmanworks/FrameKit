@@ -16,6 +16,8 @@
 
 #include "DemoLayer.h"
 #include "VideoLayer.h"
+#include "ImGui/ImGuiLayer.h"
+
 
 #if defined(FK_PLATFORM_WINDOWS)
 #include <windows.h>
@@ -51,6 +53,9 @@ namespace SandBox {
                 }
             }
             
+            m_ImGuiLayer = new ImGuiLayer();
+            PushLayer(m_ImGuiLayer);
+
             PushLayer(new VideoLayer("DroneVideoPort"));
             PushLayer(new DemoLayer("DemoLayer"));
 
@@ -58,9 +63,16 @@ namespace SandBox {
             return true;
         }
 
+        void OnBeforeRender() override { m_ImGuiLayer->Begin(); }
+
+        void OnAfterRender() override { m_ImGuiLayer->End(); }
+
         void Shutdown() override {
             FK_INFO("SandBoxApp shutting down");
         }
+
+    private:
+        ImGuiLayer* m_ImGuiLayer;
     };
 
 } // namespace SandBox

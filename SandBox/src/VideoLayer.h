@@ -1,36 +1,41 @@
 #pragma once
-
 #include <FrameKit/FrameKit.h>
 #include <FrameKit/MediaKit/MediaKit.h>
+#include <memory>
+#include <vector>
+#include <cstdint>
 
 namespace SandBox {
-	class VideoLayer : public FrameKit::Layer
-	{
-	public:
-		VideoLayer(std::string name);
-		virtual ~VideoLayer() = default;
+    class VideoLayer : public FrameKit::Layer {
+    public:
+        VideoLayer(std::string name);
+        ~VideoLayer() override = default;
 
-	public:
-		// derived Methods
-		virtual void OnAttach() override;
-		virtual void OnDetach() override;
-		virtual void OnAsyncUpdate() override;
-		virtual void OnSyncUpdate(FrameKit::Timestep ts) override;
-		virtual void OnRender() override;
-		virtual void OnEvent(FrameKit::Event& e) override;
+        void OnAttach() override;
+        void OnDetach() override;
+        void OnAsyncUpdate() override;
+        void OnSyncUpdate(FrameKit::Timestep ts) override;
+        void OnRender() override;
+        void OnEvent(FrameKit::Event& e) override;
 
-	private:
-		// renderer hooks you already have (implement somewhere in your gfx layer)
-		uint64_t CreateTextureRGBA8(int w, int h);
-		void     UpdateTextureRGBA8(uint64_t tex, const void* rgba, int w, int h);
-		void     DestroyTexture(uint64_t tex);
+    private:
+        // renderer hooks
+        uint64_t CreateTextureRGBA8(int w, int h);
+        void     UpdateTextureRGBA8(uint64_t tex, const void* rgba, int w, int h);
+        void     DestroyTexture(uint64_t tex);
 
-		void EnsureTexture(int w, int h);
+        void EnsureTexture(int w, int h);
+        static const char* ToString(FrameKit::MediaKit::PlayerState s);
 
-	private:
-		std::unique_ptr<FrameKit::MediaKit::IPlayer> m_Player;
-		bool      m_Paused{ true };
-		uint64_t  m_Tex{ 0 };
-		int       m_TexW{ 0 }, m_TexH{ 0 };
-	};
-}
+    private:
+        std::unique_ptr<FrameKit::MediaKit::IPlayer> m_Player;
+        bool      m_Paused{ true };
+        bool      m_Loop{ false };
+        double    m_Rate{ 1.0 };
+
+        // Texture
+        uint64_t  m_Tex{ 0 };
+        int       m_TexW{ 0 };
+        int       m_TexH{ 0 };
+    };
+} // namespace SandBox

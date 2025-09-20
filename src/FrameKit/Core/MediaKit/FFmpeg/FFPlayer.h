@@ -1,0 +1,43 @@
+// FFPlayer.h
+#pragma once
+#include "FrameKit/MediaKit/MediaKit.h"
+#include "FFVideoReader.h"
+#include <thread>
+#include <mutex>
+#include <condition_variable>
+#include <deque>
+namespace FrameKit::MediaKit {
+    class FFPlayer final : public IPlayer {
+    public:
+        bool open(std::string_view path, const PlayerConfig& cfg) override;
+        void close() override;
+        void play() override; void pause() override; void stop() override;
+        bool seek(double s, bool exact = false) override;
+        bool setRate(double) override { return false; }
+        void setLoop(bool v) override { loop_ = v; }
+        PlayerState state() const override { return state_; }
+        MediaInfo info() const override { return { readerInfo_ }; }
+        double time() const override { return clock_; }
+        bool getVideo(VideoFrame& out) override;
+        bool getAudio(AudioFrame&) override { return false; }
+        void setVideoSink(VideoSink s) override { sinkV_ = std::move(s); }
+        void setAudioSink(AudioSink) override {}
+        void setExternalTime(double t) override { extClock_ = t; }
+    private:
+        void demuxDecodeThread();
+        void presentThread();
+
+        PlayerConfig cfg_{};
+        PlayerState state_{ PlayerState::Idle };
+        std::unique_ptr<FFVideoReader> rdr_;
+        DemuxInfo readerInfo_{};
+        std::thread thRead_, thPresent_;
+        std::atomic<bool> quit_{ false };
+        std::deque<VideoFrame> vq_;
+        mutable std::mutex m_;
+        std::condition_variable cv_;
+        double clock_{ 0.0 }, extClock_{ 0.0 };
+        bool loop_{ false }, paused_{ true };
+        VideoSink sinkV_{};
+    };
+}
