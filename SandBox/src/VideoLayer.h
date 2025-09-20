@@ -4,6 +4,8 @@
 #include <memory>
 #include <vector>
 #include <cstdint>
+#include <mutex>
+#include <atomic>
 
 namespace SandBox {
     class VideoLayer : public FrameKit::Layer {
@@ -37,5 +39,11 @@ namespace SandBox {
         uint64_t  m_Tex{ 0 };
         int       m_TexW{ 0 };
         int       m_TexH{ 0 };
+
+    private:
+        std::mutex              m_FrameMtx;
+        std::vector<uint8_t>    m_PendingRGBA;
+        int                     m_PendingW{ 0 }, m_PendingH{ 0 };
+        std::atomic<bool>       m_HasPending{ false };
     };
 } // namespace SandBox

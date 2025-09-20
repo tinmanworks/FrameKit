@@ -13,11 +13,11 @@ namespace FrameKit::MediaKit {
         void close() override;
         void play() override; void pause() override; void stop() override;
         bool seek(double s, bool exact = false) override;
-        bool setRate(double) override { return false; }
+        bool setRate(double) override;
         void setLoop(bool v) override { loop_ = v; }
         PlayerState state() const override { return state_; }
         MediaInfo info() const override { return { readerInfo_ }; }
-        double time() const override { return clock_; }
+        double time() const override;
         bool getVideo(VideoFrame& out) override;
         bool getAudio(AudioFrame&) override { return false; }
         void setVideoSink(VideoSink s) override { sinkV_ = std::move(s); }
@@ -37,6 +37,10 @@ namespace FrameKit::MediaKit {
         mutable std::mutex m_;
         std::condition_variable cv_;
         double clock_{ 0.0 }, extClock_{ 0.0 };
+        double baseMedia_{ 0.0 };
+        std::chrono::steady_clock::time_point baseWall_{};
+        double lastPTS_{ 0.0 };     // last presented PTS
+        double rate_{ 1.0 };
         bool loop_{ false }, paused_{ true };
         VideoSink sinkV_{};
     };

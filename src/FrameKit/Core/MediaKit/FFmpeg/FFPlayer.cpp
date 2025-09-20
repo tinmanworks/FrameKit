@@ -6,6 +6,14 @@ extern "C" {
 #include <libavutil/pixfmt.h>
 }
 
+using Clock = std::chrono::steady_clock;
+static inline double NowSec() {
+    return std::chrono::duration<double>(Clock::now().time_since_epoch()).count();
+}
+static inline double Since(const Clock::time_point& tp) {
+    return std::chrono::duration<double>(Clock::now() - tp).count();
+}
+
 static AVPixelFormat AvFromFk(FrameKit::MediaKit::PixelFormat f) {
     using PF = FrameKit::MediaKit::PixelFormat;
     switch (f) {
@@ -79,24 +87,36 @@ static bool ConvertToRGBA(const FrameKit::MediaKit::VideoFrame& in,
 }
 
 
-using namespace FrameKit::MediaKit;
-
 namespace FrameKit::MediaKit {
     std::unique_ptr<IPlayer> MakePlayer_FFmpeg() { return std::make_unique<FFPlayer>(); }
 }
 
+using namespace FrameKit::MediaKit;
 
 bool FFPlayer::open(std::string_view path, const PlayerConfig& cfg) {
     close();
+    state_ = PlayerState::Opening;
     cfg_ = cfg;
     rdr_ = std::make_unique<FFVideoReader>();
     readerInfo_ = rdr_->open(path);
-    if (!readerInfo_.video) { rdr_.reset(); state_ = PlayerState::Error; return false; }
-    quit_ = false; paused_ = true; clock_ = 0.0; state_ = PlayerState::Paused;
+    if (!readerInfo_.video) { 
+        rdr_.reset(); 
+        state_ = PlayerState::Error; 
+        return false; 
+    }
+    quit_ = false; 
+    clock_ = 0.0; 
+    rate_ = 1.0;
+    paused_ = true;
+    baseMedia_ = 0.0;
+    baseWall_ = Clock::now();
+    lastPTS_ = 0.0;
+    state_ = PlayerState::Paused;
     thRead_ = std::thread(&FFPlayer::demuxDecodeThread, this);
     thPresent_ = std::thread(&FFPlayer::presentThread, this);
     return true;
 }
+
 void FFPlayer::close() {
     quit_ = true; cv_.notify_all();
     if (thRead_.joinable()) thRead_.join();
@@ -105,17 +125,59 @@ void FFPlayer::close() {
     std::scoped_lock lk(m_); vq_.clear();
     state_ = PlayerState::Idle;
 }
-void FFPlayer::play() { paused_ = false; state_ = PlayerState::Playing; cv_.notify_all(); }
-void FFPlayer::pause() { paused_ = true;  state_ = PlayerState::Paused;  cv_.notify_all(); }
-void FFPlayer::stop() { pause(); seek(0.0, false); }
+
+void FFPlayer::play() {
+    if (!paused_) return;
+    // resume: pin wall clock to current media time
+    baseWall_ = Clock::now();
+    paused_ = false;
+    state_ = PlayerState::Playing;
+    cv_.notify_all();
+}
+
+void FFPlayer::pause() {
+    if (paused_) return;
+    // capture current running time into baseMedia_
+    baseMedia_ = time();
+    paused_ = true;
+    state_ = PlayerState::Paused;
+    cv_.notify_all();
+}
+
+void FFPlayer::stop() {
+    pause();
+    seek(0.0, false);
+    state_ = PlayerState::Stopped;
+}
+
+bool FFPlayer::setRate(double r) {
+    if (r <= 0.0) return false;
+    // retime from current time
+    baseMedia_ = time();
+    baseWall_ = Clock::now();
+    rate_ = r;
+    return true;
+}
+
 bool FFPlayer::seek(double s, bool exact) {
-    std::scoped_lock lk(m_);
-    vq_.clear();
-    clock_ = s;
+    {
+        std::scoped_lock lk(m_);
+        vq_.clear();
+        lastPTS_ = s;
+    }
+    // retime clock to seek target
+    baseMedia_ = s;
+    baseWall_ = Clock::now();
     bool ok = rdr_ && rdr_->seek(s, exact);
     cv_.notify_all();
     return ok;
 }
+
+double FFPlayer::time() const {
+    if (paused_) return baseMedia_;
+    return baseMedia_ + rate_ * std::chrono::duration<double>(Clock::now() - baseWall_).count();
+}
+
 bool FFPlayer::getVideo(VideoFrame& out) {
     std::unique_lock lk(m_);
     if (vq_.empty()) return false;
@@ -124,12 +186,17 @@ bool FFPlayer::getVideo(VideoFrame& out) {
 }
 void FFPlayer::demuxDecodeThread() {
     VideoFrame vf;
-    SwsState sws;                      // <-- add state here
-    std::vector<uint8_t> rgba;         // <-- temp buffer
+    SwsState sws;
+    std::vector<uint8_t> rgba;
 
     for (;;) {
         if (quit_) return;
-        if (paused_) { std::unique_lock lk(m_); cv_.wait(lk, [&] { return quit_ || !paused_; }); if (quit_) return; }
+
+        if (paused_) {
+            std::unique_lock lk(m_);
+            cv_.wait(lk, [&] { return quit_ || !paused_; });
+            if (quit_) return;
+        }
 
         {
             std::unique_lock lk(m_);
@@ -137,7 +204,12 @@ void FFPlayer::demuxDecodeThread() {
         }
 
         bool ok = rdr_->read(&vf, nullptr);
-        if (!ok) { if (loop_) { rdr_->seek(0.0, false); continue; } state_ = PlayerState::Ended; paused_ = true; continue; }
+        if (!ok) {
+            if (loop_) { rdr_->seek(0.0, false); continue; }
+            state_ = PlayerState::Ended;
+            pause(); // freeze time() at current baseMedia_
+            continue;
+        }
 
         // Enforce requested output format
         if (cfg_.outFmt == PixelFormat::RGBA8 || cfg_.outFmt == PixelFormat::BGRA8) {
@@ -153,27 +225,52 @@ void FFPlayer::demuxDecodeThread() {
             }
         }
 
-        { std::scoped_lock lk(m_); vq_.push_back(std::move(vf)); }
+        {
+            std::scoped_lock lk(m_);
+            vq_.push_back(std::move(vf));
+        }
         cv_.notify_all();
     }
 }
 
 void FFPlayer::presentThread() {
+    const double epsilon = 1.0 / 1000.0; // 1 ms
     for (;;) {
         if (quit_) return;
-        if (paused_) { std::unique_lock lk(m_); cv_.wait(lk, [&] { return quit_ || !paused_; }); if (quit_) return; }
+
+        // wait if paused
+        if (paused_) {
+            std::unique_lock lk(m_);
+            cv_.wait(lk, [&] { return quit_ || !paused_; });
+            if (quit_) return;
+        }
+
         VideoFrame fr;
         {
             std::unique_lock lk(m_);
             if (vq_.empty()) { lk.unlock(); std::this_thread::sleep_for(std::chrono::milliseconds(1)); continue; }
             fr = vq_.front();
-            double t = PtsSeconds(fr.pts);
-            double now = clock_;
-            if (t > now) { lk.unlock(); std::this_thread::sleep_for(std::chrono::milliseconds(1)); continue; }
-            vq_.pop_front();
         }
-        clock_ = PtsSeconds(fr.pts);
-        if (sinkV_) sinkV_(fr); // push model
-        // or have app call getVideo() in its render loop.
+
+        double pts = PtsSeconds(fr.pts);
+        double now = time();
+
+        if (pts <= now + epsilon) {
+            // present now
+            {
+                std::unique_lock lk(m_);
+                if (!vq_.empty()) vq_.pop_front();
+            }
+            lastPTS_ = pts;
+            if (sinkV_) sinkV_(fr);
+            continue;
+        }
+
+        // Sleep only by the delta; no extra rate scaling here.
+        double waitSec = (pts - now);
+        if (waitSec > 0.020) waitSec = 0.020; // cap sleep granularity
+        if (waitSec < 0.0) waitSec = 0.0;
+        std::this_thread::sleep_for(std::chrono::duration<double>(waitSec));
     }
 }
+

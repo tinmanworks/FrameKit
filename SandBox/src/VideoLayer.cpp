@@ -15,7 +15,7 @@ namespace SandBox {
     void VideoLayer::OnAttach() {
         FK_PROFILE_FUNCTION();
 
-        const char* path = "S:/FlightDeck/FDVizApp/Resources/Test.mp4";
+        const char* path = "S:/FlightDeck/FDVizApp/Resources/footage.mp4";
 
         PlayerConfig cfg{};
         cfg.hwDecode = false;
@@ -34,6 +34,17 @@ namespace SandBox {
         m_Player->setRate(m_Rate);
         m_Player->play();
         m_Paused = false;
+
+        m_Player->setVideoSink([this](const FrameKit::MediaKit::VideoFrame& f) {
+            // Expect RGBA/BGRA per cfg.outFmt
+            if (f.planes.empty()) return;
+            std::lock_guard<std::mutex> lk(m_FrameMtx);
+            m_PendingW = f.info.w;
+            m_PendingH = f.info.h;
+            m_PendingRGBA = f.planes[0];     // copy; small and safe
+            m_HasPending.store(true, std::memory_order_release);
+            });
+
     }
 
     void VideoLayer::OnDetach() {
@@ -59,26 +70,15 @@ namespace SandBox {
             return;
         }
 
-        // Pull newest ready frame
-        VideoFrame fr;
-        bool got = false;
-        while (m_Player->getVideo(fr)) got = true;
-
-        if (got) {
-            const int w = fr.info.w, h = fr.info.h;
+        if (m_HasPending.exchange(false, std::memory_order_acq_rel)) {
+            std::vector<uint8_t> rgba; int w = 0, h = 0;
+            {
+                std::lock_guard<std::mutex> lk(m_FrameMtx);
+                rgba = std::move(m_PendingRGBA); w = m_PendingW; h = m_PendingH;
+            }
             EnsureTexture(w, h);
-
-            // Expect RGBA8/BGRA8 from backend per cfg.outFmt
-            if (fr.info.decodeFmt == PixelFormat::RGBA8 || fr.info.decodeFmt == PixelFormat::BGRA8) {
-                kUploadFmt = (fr.info.decodeFmt == PixelFormat::RGBA8) ? GL_RGBA : GL_BGRA;
-                if (!fr.planes.empty())
-                    UpdateTextureRGBA8(m_Tex, fr.planes[0].data(), w, h);
-            }
-            else {
-                // Backend did not honor outFmt. Skip with notice.
-                FK_CORE_WARN("VideoLayer: unexpected decodeFmt {}; expecting RGBA/BGRA",
-                    static_cast<int>(fr.info.decodeFmt));
-            }
+            kUploadFmt = GL_RGBA; // cfg requests RGBA8
+            UpdateTextureRGBA8(m_Tex, rgba.data(), w, h);
         }
 
         ImGui::Begin("VideoPort", nullptr,
