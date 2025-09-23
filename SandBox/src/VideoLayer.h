@@ -30,6 +30,8 @@ namespace SandBox {
         static const char* ToString(FrameKit::MediaKit::PlayerState s);
 
     private:
+        std::string m_Path;        // user-provided file path
+        void OpenMedia(const std::string& path);
         std::unique_ptr<FrameKit::MediaKit::IPlayer> m_Player;
         bool      m_Paused{ true };
         bool      m_Loop{ false };
