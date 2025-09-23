@@ -98,17 +98,30 @@ message(STATUS "FFMpeg linkage: ${FK_MEDIA_ENABLE_FFMPEG}")
 if(FK_MEDIA_ENABLE_FFMPEG)
   if(MSVC)
     find_package(FFMPEG REQUIRED)             # via vcpkg toolchain
-    target_include_directories(FrameKit PRIVATE ${FFMPEG_INCLUDE_DIRS})
+    target_include_directories(FrameKit PUBLIC ${FFMPEG_INCLUDE_DIRS})
     if(FFMPEG_LIBRARY_DIRS)
-      target_link_directories(FrameKit PRIVATE ${FFMPEG_LIBRARY_DIRS})
+      target_link_directories(FrameKit PUBLIC ${FFMPEG_LIBRARY_DIRS})
     endif()
-    target_link_libraries(FrameKit PRIVATE ${FFMPEG_LIBRARIES})
+    target_link_libraries(FrameKit PUBLIC ${FFMPEG_LIBRARIES})
   else()
     find_package(PkgConfig QUIET)
     if(PKG_CONFIG_FOUND)
-      pkg_check_modules(FFMPEG REQUIRED IMPORTED_TARGET
-        libavformat libavcodec libswscale libswresample)
-      target_link_libraries(FrameKit PRIVATE PkgConfig::FFMPEG)
+        pkg_check_modules(AVFORMAT   REQUIRED IMPORTED_TARGET libavformat)
+        pkg_check_modules(AVCODEC    REQUIRED IMPORTED_TARGET libavcodec)
+        pkg_check_modules(AVUTIL     REQUIRED IMPORTED_TARGET libavutil)
+        pkg_check_modules(SWSCALE    REQUIRED IMPORTED_TARGET libswscale)
+        pkg_check_modules(SWRESAMPLE REQUIRED IMPORTED_TARGET libswresample)
+        find_package(Threads REQUIRED)
+        target_link_libraries(FrameKit
+          PUBLIC
+            PkgConfig::AVFORMAT
+            PkgConfig::AVCODEC
+            PkgConfig::AVUTIL
+            PkgConfig::SWSCALE
+            PkgConfig::SWRESAMPLE
+          PRIVATE
+            Threads::Threads m dl
+        )
     else()
       message(WARNING "pkg-config not found; FFmpeg disabled on this platform.")
       set(FK_MEDIA_ENABLE_FFMPEG OFF)
