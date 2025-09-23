@@ -33,7 +33,7 @@ namespace FrameKit
         virtual void OnDetach() {}
 
 		// Per-frame update in the main thread
-        virtual void OnSyncUpdate(Timestep ts) {}
+        virtual void OnSyncUpdate(Timestep) {}
 
 		// Called in the main thread if the layer supports rendering
 		// Only in windowed mode
@@ -45,7 +45,7 @@ namespace FrameKit
         virtual void OnAsyncUpdate() {}
 
 		// Event handling
-        virtual void OnEvent(Event& event) {}
+        virtual void OnEvent(Event&) {}
 
         FK_NODISCARD const std::string& GetName() const noexcept { return m_DebugName; }
 

@@ -89,6 +89,11 @@ include(GNUInstallDirs)
 # ------------------------------ Subdirectories -------------------------------
 add_subdirectory(vendor)
 add_subdirectory(src/FrameKit)
+
+message(STATUS "============================ FrameKit Configuration Ended ==============================")
+message(STATUS "========================================================================================")
+message(STATUS "")
+message(STATUS "========================== Configuring SandBox Application =============================")
 if(BUILD_SANDBOX)
   add_subdirectory(SandBox)
 endif()
