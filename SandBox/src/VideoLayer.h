@@ -1,6 +1,9 @@
 #pragma once
 #include <FrameKit/FrameKit.h>
 #include <FrameKit/MediaKit/MediaKit.h>
+
+#include "utils/FileDialog.h"
+
 #include <memory>
 #include <vector>
 #include <cstdint>
@@ -48,5 +51,9 @@ namespace SandBox {
         std::vector<uint8_t>    m_PendingRGBA;
         int                     m_PendingW{ 0 }, m_PendingH{ 0 };
         std::atomic<bool>       m_HasPending{ false };
+
+    private:
+        ui::FileDialog m_FileDlg;
+
     };
 } // namespace SandBox

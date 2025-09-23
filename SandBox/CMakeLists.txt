@@ -26,6 +26,8 @@ target_sources(SandBox PRIVATE
   "${CMAKE_CURRENT_LIST_DIR}/src/VideoLayer.h"
   "${CMAKE_CURRENT_LIST_DIR}/src/DemoLayer.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/src/VideoLayer.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/src/utils/FileDialog.h"
+  "${CMAKE_CURRENT_LIST_DIR}/src/utils/FileDialog.cpp"
 )
 
 target_link_libraries(SandBox 

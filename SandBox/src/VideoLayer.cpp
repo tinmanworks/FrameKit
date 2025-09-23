@@ -15,6 +15,8 @@ namespace SandBox {
 
     void VideoLayer::OnAttach() {
         FK_PROFILE_FUNCTION();
+        
+        m_FileDlg.filters = {"mp4","mkv","avi","mov","webm","ts","m2ts","mpg","mpeg","flv","wmv","ogv","m4v","wav","mp3","aac","flac","ogg"};
 
         m_Alive.store(true, std::memory_order_release);
         m_Path.clear();        
@@ -56,6 +58,17 @@ namespace SandBox {
         ImGui::SameLine();
         if (ImGui::Button("Open")) {
             if (!m_Path.empty()) OpenMedia(m_Path);
+        }
+        ImGui::SameLine();
+
+        if (ImGui::Button("Browse")) {
+            m_FileDlg.open = true;
+            ImGui::OpenPopup("Open Media");
+        }
+        std::string picked;
+        if (m_FileDlg.Show("Open Media", picked)) {
+            m_Path = picked;
+            OpenMedia(m_Path);
         }
 
         // Drag-and-drop file support (from OS/file manager)
