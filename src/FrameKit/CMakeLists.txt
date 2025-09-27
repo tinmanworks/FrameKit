@@ -97,12 +97,20 @@ message(STATUS "FFMpeg linkage: ${FK_MEDIA_ENABLE_FFMPEG}")
 # ---- FFmpeg linkage (single block) ----
 if(FK_MEDIA_ENABLE_FFMPEG)
   if(MSVC)
-    find_package(FFMPEG REQUIRED)             # via vcpkg toolchain
-    target_include_directories(FrameKit PUBLIC ${FFMPEG_INCLUDE_DIRS})
-    if(FFMPEG_LIBRARY_DIRS)
-      target_link_directories(FrameKit PUBLIC ${FFMPEG_LIBRARY_DIRS})
-    endif()
+    # find_package(FFMPEG REQUIRED)             # via vcpkg toolchain
+    # target_include_directories(FrameKit PUBLIC ${FFMPEG_INCLUDE_DIRS})
+    # if(FFMPEG_LIBRARY_DIRS)
+    #   target_link_directories(FrameKit PUBLIC ${FFMPEG_LIBRARY_DIRS})
+    # endif()
+    # target_link_libraries(FrameKit PUBLIC ${FFMPEG_LIBRARIES})
+    find_package(FFMPEG REQUIRED)  # vcpkg
+    # Do NOT export vcpkg include paths
+    target_include_directories(FrameKit PUBLIC
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+      $<INSTALL_INTERFACE:include>
+    )
     target_link_libraries(FrameKit PUBLIC ${FFMPEG_LIBRARIES})
+    target_include_directories(FrameKit PRIVATE ${FFMPEG_INCLUDE_DIRS})
   else()
     find_package(PkgConfig QUIET)
     if(PKG_CONFIG_FOUND)

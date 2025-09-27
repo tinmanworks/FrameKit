@@ -34,7 +34,7 @@ set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "CMake")  # ALL_BUILD, ZE
 
 # ---------------------------- General Options -------------------------------
 option(FRAMEKIT_WARNINGS_AS_ERRORS "Treat warnings as errors" OFF)
-option(BUILD_SANDBOX               "Build the sandbox app" OFF)
+option(BUILD_EXAMPLES              "Build the examples" OFF)
 
 # -------------------------- Dependency Options ------------------------------
 option(FRAMEKIT_VENDOR_GLFW "Build bundled GLFW instead of finding system GLFW" ON)
@@ -93,9 +93,11 @@ add_subdirectory(src/FrameKit)
 message(STATUS "============================ FrameKit Configuration Ended ==============================")
 message(STATUS "========================================================================================")
 message(STATUS "")
-message(STATUS "========================== Configuring SandBox Application =============================")
-if(BUILD_SANDBOX)
-  add_subdirectory(SandBox)
+message(STATUS "")
+message(STATUS "")
+message(STATUS "=============================== Configuring Example Projects =============================")
+if(BUILD_EXAMPLES)
+  add_subdirectory(Examples)
 endif()
 
 # MSVC: build Debug+Release

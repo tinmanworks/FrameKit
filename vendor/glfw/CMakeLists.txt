@@ -27,14 +27,20 @@ if(TARGET glfw OR TARGET glfw3 OR TARGET glfw::glfw)
     set_target_properties(FrameKitDeps.GLFW PROPERTIES FOLDER "FrameKitDeps")
   endif()
   if(TARGET glfw)
+    set_target_properties(glfw PROPERTIES FOLDER "FrameKitDeps/glfw")
+    set_target_properties(update_mappings PROPERTIES FOLDER "FrameKitDeps/glfw")
     target_link_libraries(FrameKitDeps.GLFW INTERFACE
       $<BUILD_INTERFACE:glfw>
       $<INSTALL_INTERFACE:glfw::glfw>)
   elseif(TARGET glfw3)
+    set_target_properties(glfw3 PROPERTIES FOLDER "FrameKitDeps/glfw")
+    set_target_properties(update_mappings PROPERTIES FOLDER "FrameKitDeps/glfw")
     target_link_libraries(FrameKitDeps.GLFW INTERFACE
       $<BUILD_INTERFACE:glfw3>
       $<INSTALL_INTERFACE:glfw::glfw>)
   else()
+    set_target_properties(glfw::glfw PROPERTIES FOLDER "FrameKitDeps/glfw")
+    set_target_properties(update_mappings PROPERTIES FOLDER "FrameKitDeps/glfw")
     target_link_libraries(FrameKitDeps.GLFW INTERFACE glfw::glfw)
   endif()
 endif()
