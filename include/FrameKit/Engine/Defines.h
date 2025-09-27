@@ -72,19 +72,21 @@
 // ---------------------
 #if FK_PLATFORM_WINDOWS
 #if defined(FK_BUILD_DLL)
-#define FK_API __declspec(dllexport)
+#define FK_API extern "C" __declspec(dllexport)
 #else
-#define FK_API __declspec(dllimport)
+#define FK_API extern "C" __declspec(dllimport)
 #endif
 #define FK_LOCAL
+#define FK_CDECL __cdecl
 #else
 #if defined(__GNUC__) || defined(__clang__)
-#define FK_API   __attribute__((visibility("default")))
+#define FK_API   extern "C" __attribute__((visibility("default")))
 #define FK_LOCAL __attribute__((visibility("hidden")))
 #else
 #define FK_API
 #define FK_LOCAL
 #endif
+#define FK_CDECL
 #endif
 
 // ---------------------
