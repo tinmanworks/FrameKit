@@ -25,7 +25,10 @@ inline void* fk_get_symbol(fk_lib_handle_t lib, const char* name) {
 #include <dlfcn.h>
 using fk_lib_handle_t = void*;
 inline void* fk_get_symbol(fk_lib_handle_t lib, const char* name) { 
-    return ::dlsym(lib, name);
+    ::dlerror(); // clear
+    void* sym = ::dlsym(lib, name);
+    // optional: const char* err = ::dlerror();
+    return sym;
 }
 #endif
 

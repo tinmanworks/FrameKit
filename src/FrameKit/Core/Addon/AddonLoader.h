@@ -6,11 +6,6 @@
 #include <memory>
 #include <stdexcept>
 
-#if defined(FK_PLATFORM_WINDOWS)
-    #include <windows.h>
-    using fk_lib_handle_t = HMODULE;
-#endif
-
 namespace FrameKit {
 
     using GetAddonVersionTagFn = FrameKit::AddonVersionTag (FK_CDECL*)();

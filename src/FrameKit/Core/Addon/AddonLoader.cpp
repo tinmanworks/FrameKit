@@ -2,15 +2,28 @@
 
 namespace FrameKit {
     fk_lib_handle_t AddonLoader::open_library(const std::filesystem::path& p) {
-        HMODULE h = ::LoadLibraryW(p.wstring().c_str());
-        if (!h) throw std::runtime_error("LoadLibraryW failed");
-        return h;
+#if defined(FK_PLATFORM_WINDOWS)
+    HMODULE h = ::LoadLibraryW(p.wstring().c_str());
+    if (!h) throw std::runtime_error("LoadLibraryW failed");
+    return h;
+#else
+    // dlopen needs char*; prefer absolute path to avoid rpath surprises
+    void* h = ::dlopen(p.string().c_str(), RTLD_NOW);
+    if (!h) {
+        const char* err = ::dlerror();
+        throw std::runtime_error(err ? err : "dlopen failed");
+    }
+    return h;
+#endif
 
     }
 
     void AddonLoader::close_library(fk_lib_handle_t h) noexcept {
+#if defined(FK_PLATFORM_WINDOWS)
         if (h) ::FreeLibrary(h);
-
+#else
+        if (h) ::dlclose(h);
+#endif
     }
 
     IAddonHost* AddonLoader::LoadAddon(const std::filesystem::path& p) {

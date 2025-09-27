@@ -9,8 +9,17 @@
 namespace FrameKit {
 
     bool AddonManager::IsSharedLibraryFile(const std::filesystem::path& p) {
-        return p.has_extension() && _wcsicmp(p.extension().c_str(), L".dll") == 0;
-    }
+        if (!p.has_extension()) return false;
+
+#if defined(FK_PLATFORM_WINDOWS)
+        auto ext = p.extension().wstring();
+        return _wcsicmp(ext.c_str(), L".dll") == 0;
+#else // Linux and other UNIX
+        auto ext = p.extension().string();
+        for (auto& c : ext) c = static_cast<char>(std::tolower(c));
+        return ext == ".so";
+#endif
+}
 
     void AddonManager::LoadAddons() {
         std::error_code ec;
