@@ -1,6 +1,6 @@
 #pragma once
 
-#include "FrameKit/Core/Addon/AddonLoader.h"
+#include "FrameKit/Addon/AddonLoader.h"
 
 #include <filesystem>
 #include <vector>

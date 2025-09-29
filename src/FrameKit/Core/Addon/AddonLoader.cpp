@@ -1,4 +1,4 @@
-#include "FrameKit/Core/Addon/AddonLoader.h"
+#include "FrameKit/Addon/AddonLoader.h"
 
 namespace FrameKit {
     fk_lib_handle_t AddonLoader::open_library(const std::filesystem::path& p) {

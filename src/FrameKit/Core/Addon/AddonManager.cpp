@@ -1,5 +1,5 @@
 // AddonManager.cpp
-#include "AddonManager.h"
+#include "FrameKit/Addon/AddonManager.h"
 
 #include "FrameKit/Debug/Log.h"
 

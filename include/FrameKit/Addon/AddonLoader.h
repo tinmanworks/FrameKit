@@ -1,13 +1,13 @@
 #pragma once
 
-#include "FrameKit/Core/Addon/AddonHost.h"
+#include "FrameKit/Addon/AddonHost.h"
 #include <filesystem>
 #include <functional>
 #include <memory>
 #include <stdexcept>
 
 namespace FrameKit {
-
+    
     using GetAddonVersionTagFn = FrameKit::AddonVersionTag (FK_CDECL*)();
 
     class AddonLoader {
