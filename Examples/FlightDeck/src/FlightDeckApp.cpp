@@ -14,7 +14,9 @@
 #define FK_WINDOW_BACKEND_GLFW_ENABLE 1
 #include <FrameKit/Window.h>
 
-#include "DemoLayer.h"
+#include <FrameKit/Addon/AddonManager.h>
+
+#include "FDAExt.h"
 #include "VideoLayer.h"
 #include "ImGui/ImGuiLayer.h"
 
@@ -27,6 +29,39 @@
 
 
 namespace FlightDeck {
+    
+    static void* HAlloc(uint64_t n) noexcept { return std::malloc((size_t)n); }
+    static void  HFree(void* p) noexcept { std::free(p); }
+    static void  HLog(int lvl, const char* m) noexcept { std::printf("[L%d] %s\n", lvl, m ? m : ""); }
+    static double HNow() noexcept {
+        using namespace std::chrono;
+        return duration<double>(steady_clock::now().time_since_epoch()).count();
+    }
+
+    static void SBSetImGui(void*) noexcept {}
+
+    static SB_HostV1 g_sb_host{
+        1u, sizeof(SB_HostV1), &SBSetImGui
+    };
+
+    static FK_HostV1 g_fk_host{
+    1u, sizeof(FK_HostV1), &HAlloc, &HFree, &HLog, &HNow
+    };
+
+    struct Policy : FrameKit::IAddonPolicy {
+        bool IsAddonFile(const std::filesystem::path& p) const override {
+            auto e = p.extension().string();
+            std::transform(e.begin(), e.end(), e.begin(), ::tolower);
+            return e == ".dll"; // FlightDeck Addon Extension
+        }
+        void OnAddonLoaded(FrameKit::LoadedAddon& a) override {
+            // App can query addon-specific interfaces here if needed
+            if (auto* img = (SB_ImGuiV1*)a.addon_get(SB_IFACE_IMGUI_V1, 1)) {
+                // e.g., cache pointer somewhere or call SetContext
+                (void)img;
+            }
+        }
+    };
 
     class FlightDeckApp : public FrameKit::Application {
     public:
@@ -36,6 +71,12 @@ namespace FlightDeck {
             FrameKit::Log::GetClientLogger()->set_level(FrameKit::LogLevel::Info);
 
             FrameKit::InitializeWindowBackends();
+            
+			m_AddonManager = FrameKit::CreateRef<FrameKit::AddonManager>(m_Policy);
+
+            // register host tables available to addons
+            m_AddonManager->RegisterHostInterface(FK_IFACE_HOST_V1, 1, &g_fk_host);
+            m_AddonManager->RegisterHostInterface(SB_IFACE_HOST_V1, 1, &g_sb_host);
         }
 
         bool Init() override {
@@ -57,7 +98,6 @@ namespace FlightDeck {
             PushLayer(m_ImGuiLayer);
 
             PushLayer(new VideoLayer("DroneVideoPort"));
-            PushLayer(new DemoLayer("DemoLayer"));
 
             FK_INFO("FlightDeck Application initialized");
             return true;
@@ -72,6 +112,8 @@ namespace FlightDeck {
         }
 
     private:
+        Policy m_Policy;
+        FrameKit::Ref<FrameKit::AddonManager> m_AddonManager;
         ImGuiLayer* m_ImGuiLayer;
     };
 

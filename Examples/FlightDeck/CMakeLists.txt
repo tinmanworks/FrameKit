@@ -16,18 +16,15 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 
 add_subdirectory(vendor)
 
+file(GLOB_RECURSE flightdeck_files
+        src/*.cpp
+        src/*.h
+)
+
 add_executable(FlightDeck)
 
 target_sources(FlightDeck PRIVATE
-  "${CMAKE_CURRENT_LIST_DIR}/src/FlightDeckApp.cpp"
-  "${CMAKE_CURRENT_LIST_DIR}/src/ImGui/ImGuiLayer.h"
-  "${CMAKE_CURRENT_LIST_DIR}/src/ImGui/ImGuiLayer.cpp"
-  "${CMAKE_CURRENT_LIST_DIR}/src/DemoLayer.h"
-  "${CMAKE_CURRENT_LIST_DIR}/src/VideoLayer.h"
-  "${CMAKE_CURRENT_LIST_DIR}/src/DemoLayer.cpp"
-  "${CMAKE_CURRENT_LIST_DIR}/src/VideoLayer.cpp"
-  "${CMAKE_CURRENT_LIST_DIR}/src/utils/FileDialog.h"
-  "${CMAKE_CURRENT_LIST_DIR}/src/utils/FileDialog.cpp"
+    ${flightdeck_files}
 )
 
 target_link_libraries(FlightDeck 

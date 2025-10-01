@@ -70,23 +70,28 @@
 // ---------------------
 // Symbol visibility
 // ---------------------
-#if FK_PLATFORM_WINDOWS
-#if defined(FK_BUILD_DLL)
-#define FK_API extern "C" __declspec(dllexport)
+
+#if defined(__cplusplus)
+#define FK_EXTERN_C extern "C"
 #else
-#define FK_API extern "C" __declspec(dllimport)
+#define FK_EXTERN_C
 #endif
-#define FK_LOCAL
+
+#if defined(FK_PLATFORM_WINDOWS)
 #define FK_CDECL __cdecl
+#define FK_EXPORT __declspec(dllexport)
+#define FK_IMPORT __declspec(dllimport)
 #else
-#if defined(__GNUC__) || defined(__clang__)
-#define FK_API   extern "C" __attribute__((visibility("default")))
-#define FK_LOCAL __attribute__((visibility("hidden")))
-#else
-#define FK_API
-#define FK_LOCAL
-#endif
+#include <dlfcn.h>
 #define FK_CDECL
+#define FK_EXPORT __attribute__((visibility("default")))
+#define FK_IMPORT
+#endif
+
+#if defined(FRAMEKIT_BUILDING_ADDON)
+#define FK_API FK_EXTERN_C FK_EXPORT
+#else
+#define FK_API FK_EXTERN_C FK_IMPORT
 #endif
 
 // ---------------------

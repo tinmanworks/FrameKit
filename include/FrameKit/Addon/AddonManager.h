@@ -1,3 +1,14 @@
+// =============================================================================
+// Project      : FrameKit
+// File         : include/FrameKit/Addon/AddonManager.h
+// Author       : George Gil
+// Created      : 2025-09-20
+// Updated      : 2025-10-01
+// License      : Dual Licensed: GPLv3 or Proprietary (c) 2025 George Gil
+// Description  : 
+//        
+// =============================================================================
+
 #pragma once
 
 #include "FrameKit/Addon/AddonLoader.h"
@@ -7,31 +18,35 @@
 #include <memory>
 
 namespace FrameKit {
-    struct LoadedAddon {
-        int Id;
-        std::filesystem::path path;
-        IAddonHost* host{};
-        AddonVersionTag tag{};
-        AddonABIVersion abi{};
+
+    struct IAddonPolicy {
+        virtual ~IAddonPolicy() = default;
+        virtual bool IsAddonFile(const std::filesystem::path&) const = 0; // e.g. ".sae"
+        virtual void OnAddonLoaded(LoadedAddon&) = 0; // app can query its own ifaces
     };
 
-    class AddonManager {
-
+    class AddonManager : public IHostGetProvider {
     public:
-        void SetAddonDirectory(const std::filesystem::path& p) { m_AddonsDirectory = p; }
-        const std::filesystem::path& GetAddonDirectory() const { return m_AddonsDirectory; }
-
-        void LoadAddons();           // scan dir and load new ones
+        explicit AddonManager(IAddonPolicy& policy);
+        void SetDirectory(std::filesystem::path p);
+        void LoadAll();
         void UnloadAll();
-        bool UnloadIndex(size_t i);  // unload one
-        const std::vector<LoadedAddon>& Items() const { return m_Loaded; }
+        void TickUpdate();
+        void TickRender();
+        void TickCyclic();
+
+        // IHostGetProvider
+        void* HostGet(const char* id, uint32_t min_ver) noexcept override;
+
+        // registration for host tables
+        void RegisterHostInterface(const char* id, uint32_t ver, const void* table);
 
     private:
-        static bool IsSharedLibraryFile(const std::filesystem::path& p);
-
-        int m_AddonIdCounter = 0;
-        AddonLoader m_Loader{};
-        std::vector<LoadedAddon> m_Loaded;
-        std::filesystem::path m_AddonsDirectory;
+        std::filesystem::path dir_;
+        IAddonPolicy& policy_;
+        AddonLoader loader_;
+        std::vector<LoadedAddon> items_;
+        struct HostEntry { const char* id; uint32_t ver; const void* table; };
+        std::vector<HostEntry> host_ifaces_;
     };
 }

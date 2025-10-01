@@ -1,71 +1,56 @@
-// AddonManager.cpp
-#include "FrameKit/Addon/AddonManager.h"
+// =============================================================================
+// Project      : FrameKit
+// File         : src/FrameKit/Core/Addon/AddonManager.cpp
+// Author       : George Gil
+// Created      : 2025-09-20
+// Updated      : 2025-10-01
+// License      : Dual Licensed: GPLv3 or Proprietary (c) 2025 George Gil
+// Description  : 
+//        
+// =============================================================================
 
+#include "FrameKit/Addon/AddonManager.h"
 #include "FrameKit/Debug/Log.h"
 
-#include <iostream>
-#include <system_error>
+#include <algorithm>
+
 
 namespace FrameKit {
 
-    bool AddonManager::IsSharedLibraryFile(const std::filesystem::path& p) {
-        if (!p.has_extension()) return false;
+    AddonManager::AddonManager(IAddonPolicy& p) : policy_(p), loader_(*this) {}
 
-#if defined(FK_PLATFORM_WINDOWS)
-        auto ext = p.extension().wstring();
-        return _wcsicmp(ext.c_str(), L".dll") == 0;
-#else // Linux and other UNIX
-        auto ext = p.extension().string();
-        for (auto& c : ext) c = static_cast<char>(std::tolower(c));
-        return ext == ".so";
-#endif
-}
+    void AddonManager::SetDirectory(std::filesystem::path p) { dir_ = std::move(p); }
 
-    void AddonManager::LoadAddons() {
-        std::error_code ec;
-        if (m_AddonsDirectory.empty() ||
-            !std::filesystem::exists(m_AddonsDirectory, ec) ||
-            !std::filesystem::is_directory(m_AddonsDirectory, ec)) return;
-
-        for (const auto& ent : std::filesystem::directory_iterator(m_AddonsDirectory, ec)) {
-            if (ec || !ent.is_regular_file()) continue;
-            const auto& p = ent.path();
-            if (!IsSharedLibraryFile(p)) continue;
-
-            // skip if already loaded
-            bool dup = false;
-            for (auto& e : m_Loaded) if (std::filesystem::equivalent(e.path, p, ec)) { dup = true; break; }
-            if (dup) continue;
-
-            try {
-                printf(p.string().c_str());
-                printf("\n");
-                IAddonHost* addonHostptr = m_Loader.LoadAddon(p);
-                LoadedAddon rec{};
-                rec.Id = ++m_AddonIdCounter;
-                rec.path = p;
-                rec.host = addonHostptr;
-                rec.tag = addonHostptr->ahb_fns.get_tag();
-                rec.abi = addonHostptr->abi;
-                m_Loaded.push_back(rec);
-            }
-            catch (...) {
-                FK_CORE_WARN("Failed to load Addon {}", ent.path().string());
+    void AddonManager::LoadAll() {
+        items_.clear();
+        if (dir_.empty()) return;
+        for (auto& e : std::filesystem::directory_iterator(dir_)) {
+            if (!e.is_regular_file()) continue;
+            if (!policy_.IsAddonFile(e.path())) continue;
+            if (auto ld = loader_.Load(e.path())) {
+                policy_.OnAddonLoaded(*ld);
+                items_.push_back(*ld);
             }
         }
     }
 
-    bool AddonManager::UnloadIndex(size_t i) {
-        if (i >= m_Loaded.size()) return false;
-        auto h = m_Loaded[i].host;
-        if (h) { m_Loader.UnloadAddon(*h); }
-        m_Loaded.erase(m_Loaded.begin() + static_cast<std::ptrdiff_t>(i));
-        return true;
+    void AddonManager::UnloadAll() {
+        for (auto& a : items_) loader_.Unload(a);
+        items_.clear();
     }
 
-    void AddonManager::UnloadAll() {
-        for (auto& e : m_Loaded) if (e.host) m_Loader.UnloadAddon(*e.host);
-        m_Loaded.clear();
+    void AddonManager::TickUpdate() { for (auto& a : items_) if (a.addon_v1 && a.addon_v1->OnUpdate) a.addon_v1->OnUpdate(); }
+    void AddonManager::TickRender() { for (auto& a : items_) if (a.addon_v1 && a.addon_v1->OnRender) a.addon_v1->OnRender(); }
+    void AddonManager::TickCyclic() { for (auto& a : items_) if (a.addon_v1 && a.addon_v1->OnCyclic) a.addon_v1->OnCyclic(); }
+
+
+    void* AddonManager::HostGet(const char* id, uint32_t min_ver) noexcept {
+        for (auto& h : host_ifaces_) if (std::string_view(h.id) == id && h.ver >= min_ver) return const_cast<void*>(h.table);
+        return nullptr;
+    }
+
+    void AddonManager::RegisterHostInterface(const char* id, uint32_t ver, const void* table) {
+        host_ifaces_.push_back(HostEntry{ id, ver, table });
     }
 
 } // namespace FrameKit
