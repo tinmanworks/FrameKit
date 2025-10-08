@@ -49,7 +49,7 @@ namespace FlightDeck {
     }
 
     void AddonManagerLayer::OnSyncUpdate(FrameKit::Timestep) {
-        // Drive addon lifecycle around your app’s frame
+        // Drive addon lifecycle around your appï¿½s frame
         m_Manager->TickUpdate();
     }
 

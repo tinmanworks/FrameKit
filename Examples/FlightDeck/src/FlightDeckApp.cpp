@@ -73,9 +73,9 @@ namespace FlightDeck {
             PushLayer(new VideoLayer("DroneVideoPort"));
 
             // Addon manager layer with host registration lambda
-            auto addonsDir = std::filesystem::current_path() / "Addons";
+            auto addonsDir = std::filesystem::current_path();
             auto* amLayer = new AddonManagerLayer(
-                std::filesystem::current_path() / "Addons",
+                addonsDir,
                 [](FrameKit::AddonManager& mgr){
                     mgr.RegisterHostInterface(FK_IFACE_HOST_V1,      1, &g_fk_host);
                     mgr.RegisterHostInterface(SB_IFACE_IMGUI_HOST_V1,1, &g_imgui_host);

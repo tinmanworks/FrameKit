@@ -75,5 +75,7 @@ if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.23")
     )
 endif()
 
+set_target_properties(imgui PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
 # Group in IDE under "vendor"
 set_property(TARGET imgui PROPERTY FOLDER "Examples/FlightDeck/vendor")
