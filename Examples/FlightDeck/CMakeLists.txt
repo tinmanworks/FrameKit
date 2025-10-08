@@ -39,3 +39,5 @@ endif()
 
 
 set_target_properties(FlightDeck PROPERTIES FOLDER "Examples/FlightDeck")
+
+add_subdirectory(Addons)

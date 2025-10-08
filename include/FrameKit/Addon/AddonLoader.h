@@ -3,10 +3,10 @@
 // File         : include/FrameKit/Addon/AddonLoader.h
 // Author       : George Gil
 // Created      : 2025-09-20
-// Updated      : 2025-10-01
+// Updated      : 2025-10-08
 // License      : Dual Licensed: GPLv3 or Proprietary (c) 2025 George Gil
 // Description  : 
-//        
+//        Runtime loader for addons using the FrameKit C-ABI.
 // =============================================================================
 
 #pragma once
@@ -32,12 +32,14 @@ inline void* fk_get_symbol(fk_lib_handle_t h, const char* n) { dlerror(); return
 
 namespace FrameKit {
 
+    using GetInterfaceFn = void* (FK_CDECL*)(const char*, uint32_t) noexcept;
+
     struct LoadedAddon {
-        fk_lib_handle_t handle{};
-        FK_AddonInfo info{};
-        FK_GetInterfaceFn addon_get{};     // GetInterface from addon
-        void (*addon_shutdown)() noexcept {};
-        const FK_AddonV1* addon_v1{};      // cached lifecycle iface
+        fk_lib_handle_t  handle{};
+        FK_AddonInfo     info{};
+        GetInterfaceFn   addon_get{};        // addon's GetInterface
+        void           (*addon_shutdown)() noexcept {};
+        const FK_AddonV1* addon_v1{};        // cached lifecycle iface
     };
 
     struct IHostGetProvider {

@@ -3,16 +3,15 @@
 // File         : src/FrameKit/Core/Addon/AddonLoader.cpp
 // Author       : George Gil
 // Created      : 2025-09-20
-// Updated      : 2025-10-01
+// Updated      : 2025-10-08
 // License      : Dual Licensed: GPLv3 or Proprietary (c) 2025 George Gil
 // Description  : 
-//        
+//        Loader implementation. Uses SetHostGetterEx with per-instance context.
 // =============================================================================
 
-
 #include "FrameKit/Addon/AddonLoader.h"
-
 #include <stdexcept>
+#include <string>
 
 #if defined(FK_PLATFORM_WINDOWS)
 static std::string last_err() { return "win32"; }
@@ -21,6 +20,7 @@ static std::string last_err() { const char* e = dlerror(); return e ? e : "dlerr
 #endif
 
 namespace FrameKit {
+
     fk_lib_handle_t AddonLoader::open_library(const std::filesystem::path& p) {
 #if defined(FK_PLATFORM_WINDOWS)
         HMODULE h = LoadLibraryW(p.wstring().c_str());
@@ -41,37 +41,31 @@ namespace FrameKit {
 #endif
     }
 
-    static IHostGetProvider* g_host_provider = nullptr;
-    static void* FK_CDECL HostGetBridge(const char* id, uint32_t min_ver) noexcept {
-        return g_host_provider ? g_host_provider->HostGet(id, min_ver) : nullptr;
+    // context-aware bridge: routes to this loader's provider
+    static void* FK_CDECL HostGetCtx(void* ctx, const char* id, uint32_t min_ver) noexcept {
+        auto* prov = static_cast<IHostGetProvider*>(ctx);
+        return prov ? prov->HostGet(id, min_ver) : nullptr;
     }
 
-    AddonLoader::AddonLoader(IHostGetProvider& provider) : host_provider_(provider) {
-        g_host_provider = &host_provider_;
-    }
+    AddonLoader::AddonLoader(IHostGetProvider& provider) : host_provider_(provider) {}
 
     std::optional<LoadedAddon> AddonLoader::Load(const std::filesystem::path& lib) {
         fk_lib_handle_t h{};
         try { h = open_library(lib); }
         catch (...) { return std::nullopt; }
 
-        auto get_info = reinterpret_cast<void (FK_CDECL*)(FK_AddonInfo*)>(fk_get_symbol(h, "GetAddonInfo"));
-        auto set_host = reinterpret_cast<void (FK_CDECL*)(FK_GetInterfaceFn)>(fk_get_symbol(h, "SetHostGetter"));
-        auto get_iface = reinterpret_cast<void* (FK_CDECL*)(const char*, uint32_t)>(fk_get_symbol(h, "GetInterface"));
+        auto get_info = reinterpret_cast<void (FK_CDECL*)(FK_AddonInfo*) noexcept>(fk_get_symbol(h, "GetAddonInfo"));
+        auto set_hostex = reinterpret_cast<void (FK_CDECL*)(FK_GetInterfaceCtxFn, void*) noexcept>(fk_get_symbol(h, "SetHostGetterEx"));
+        auto get_iface = reinterpret_cast<void* (FK_CDECL*)(const char*, uint32_t) noexcept>(fk_get_symbol(h, "GetInterface"));
         auto shut_fn = reinterpret_cast<void (FK_CDECL*)(void) noexcept>(fk_get_symbol(h, "ShutdownAddon"));
 
-        if (!get_info || !set_host || !get_iface || !shut_fn) { close_library(h); return std::nullopt; }
+        if (!get_info || !set_hostex || !get_iface || !shut_fn) { close_library(h); return std::nullopt; }
 
         FK_AddonInfo info{}; get_info(&info);
         if (info.abi_major != 1) { close_library(h); return std::nullopt; }
 
-        // provide host getter
-        auto bridge = +[](const char* id, uint32_t ver) noexcept -> void* {
-            // will be replaced per-instance using TLS or capture trampoline
-            return nullptr;
-            };
-
-        set_host(&HostGetBridge);
+        // bind host getter with this manager's provider as context
+        set_hostex(&HostGetCtx, &host_provider_);
 
         // pull addon lifecycle
         auto* a1 = (const FK_AddonV1*)get_iface(FK_IFACE_ADDON_V1, 1);
@@ -83,7 +77,7 @@ namespace FrameKit {
         LoadedAddon out{};
         out.handle = h;
         out.info = info;
-        out.addon_get = reinterpret_cast<FK_GetInterfaceFn>(get_iface);
+        out.addon_get = get_iface;
         out.addon_shutdown = shut_fn;
         out.addon_v1 = a1;
         return out;

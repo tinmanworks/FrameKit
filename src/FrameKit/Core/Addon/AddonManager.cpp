@@ -3,17 +3,16 @@
 // File         : src/FrameKit/Core/Addon/AddonManager.cpp
 // Author       : George Gil
 // Created      : 2025-09-20
-// Updated      : 2025-10-01
+// Updated      : 2025-10-08
 // License      : Dual Licensed: GPLv3 or Proprietary (c) 2025 George Gil
 // Description  : 
-//        
+//        Manager implementation: scan, load, tick, unload, host iface registry.
 // =============================================================================
 
 #include "FrameKit/Addon/AddonManager.h"
 #include "FrameKit/Debug/Log.h"
-
 #include <algorithm>
-
+#include <string_view>
 
 namespace FrameKit {
 
@@ -42,7 +41,6 @@ namespace FrameKit {
     void AddonManager::TickUpdate() { for (auto& a : items_) if (a.addon_v1 && a.addon_v1->OnUpdate) a.addon_v1->OnUpdate(); }
     void AddonManager::TickRender() { for (auto& a : items_) if (a.addon_v1 && a.addon_v1->OnRender) a.addon_v1->OnRender(); }
     void AddonManager::TickCyclic() { for (auto& a : items_) if (a.addon_v1 && a.addon_v1->OnCyclic) a.addon_v1->OnCyclic(); }
-
 
     void* AddonManager::HostGet(const char* id, uint32_t min_ver) noexcept {
         for (auto& h : host_ifaces_) if (std::string_view(h.id) == id && h.ver >= min_ver) return const_cast<void*>(h.table);
