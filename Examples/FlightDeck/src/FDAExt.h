@@ -1,19 +1,18 @@
+// =============================================================================
+// Project      : FlightDeck
+// File         : FDAExt.h
+// Author       : George Gil
+// Created      : 2025-10-08
+// Updated      : 2025-10-08
+// License      : Application code using FrameKit
+// Description  : Sandbox host + addon-specific interfaces.
+// =============================================================================
 #pragma once
-
 #include <stdint.h>
 
-#include "FrameKit/Engine/Defines.h"
-
-#define SB_IFACE_HOST_V1 "Sandbox.HostV1"
-struct SB_HostV1 {
+// ---- ImGui host table the addon can query ----
+#define SB_IFACE_IMGUI_HOST_V1 "Sandbox.ImGuiHost.V1"
+struct SB_ImGuiHostV1 {
     uint32_t version, size;
-    void (*SetImGuiContext)(void* ctx) noexcept; // void* to avoid C++ ABI
-    const char* (*GetActiveDocName)() noexcept;
-};
-
-#define SB_IFACE_IMGUI_V1 "Sandbox.ImGuiV1"
-struct SB_ImGuiV1 {
-    uint32_t version, size;
-    void (FK_CDECL* SetContext)(void* imgui_ctx) noexcept;
-    void (FK_CDECL* DrawUI)() noexcept;
+    void* (*GetImGuiContext)() noexcept;             // returns ImGuiContext*
 };

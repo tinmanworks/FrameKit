@@ -48,10 +48,12 @@ namespace FlightDeck {
     }
     static FK_HostV1 g_fk_host{ 1u, sizeof(FK_HostV1), &HAlloc, &HFree, &HLog, &HNow };
 
+    static void* GetImGuiCtx() noexcept { return ImGui::GetCurrentContext(); }
+    static SB_ImGuiHostV1 g_imgui_host{1u, sizeof(SB_ImGuiHostV1), &GetImGuiCtx};
+
     // Sandbox host extras (optional)
     static void        SBSetImGui(void*) noexcept {}
     static const char* SBGetDoc() noexcept { return "Untitled"; }
-    static SB_HostV1   g_sb_host{ 1u, sizeof(SB_HostV1), &SBSetImGui, &SBGetDoc };
 
     class FlightDeckApp : public FrameKit::Application {
     public:
@@ -73,10 +75,11 @@ namespace FlightDeck {
             // Addon manager layer with host registration lambda
             auto addonsDir = std::filesystem::current_path() / "Addons";
             auto* amLayer = new AddonManagerLayer(
-                addonsDir,
-                [](FrameKit::AddonManager& mgr) {
-                    mgr.RegisterHostInterface(FK_IFACE_HOST_V1, 1, &g_fk_host);
-                    mgr.RegisterHostInterface(SB_IFACE_HOST_V1, 1, &g_sb_host);
+                std::filesystem::current_path() / "Addons",
+                [](FrameKit::AddonManager& mgr){
+                    mgr.RegisterHostInterface(FK_IFACE_HOST_V1,      1, &g_fk_host);
+                    mgr.RegisterHostInterface(SB_IFACE_IMGUI_HOST_V1,1, &g_imgui_host);
+                    // keep SB_IFACE_HOST_V1 if you also use it
                 });
             PushLayer(amLayer);
 

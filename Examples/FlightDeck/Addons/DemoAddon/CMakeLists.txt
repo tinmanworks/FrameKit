@@ -7,7 +7,11 @@ add_library(Addon_Demo SHARED
 )
 
 target_include_directories(Addon_Demo PUBLIC ${CMAKE_SOURCE_DIR}/include)
+target_include_directories(Addon_Demo PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../../src/)
 target_compile_definitions(Addon_Demo PRIVATE FRAMEKIT_BUILDING_ADDON)
+
+target_link_libraries(Addon_Demo PRIVATE imgui)
+
 
 # Optional: only if you really need imgui inside the addon
 # target_link_libraries(Addon_Demo PRIVATE imgui)
