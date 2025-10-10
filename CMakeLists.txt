@@ -65,6 +65,8 @@ set(PROJECT_NAME "FrameKit")
 set(PROJECT_DESCRIPTION "A simple C++ framework for building applications")
 set(PROJECT_VERSION 0.1.0)
 
+set(FRAMEKIT_IS_TOP_LEVEL ${PROJECT_IS_TOP_LEVEL})
+
 # Languages: enable ObjC++ only on macOS
 if(APPLE)
   project(${PROJECT_NAME} VERSION ${PROJECT_VERSION} DESCRIPTION "${PROJECT_DESCRIPTION}" LANGUAGES C CXX OBJCXX)
@@ -79,9 +81,12 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(BUILD_SHARED_LIBS OFF)
 
 # Output dirs per configuration
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_OUTPUT_DIRECTORY}/lib/$<CONFIG>")
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_OUTPUT_DIRECTORY}/lib/$<CONFIG>")
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_OUTPUT_DIRECTORY}/bin/$<CONFIG>")
+if(FRAMEKIT_IS_TOP_LEVEL)
+  set(_fk_out "${CMAKE_CURRENT_BINARY_DIR}")
+  set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${_fk_out}/lib/$<CONFIG>")
+  set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${_fk_out}/lib/$<CONFIG>")
+  set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${_fk_out}/bin/$<CONFIG>")
+endif()
 
 # ------------------------------ CMake Modules --------------------------------
 include(GNUInstallDirs)
