@@ -174,16 +174,17 @@ message(STATUS "================================================================
 add_subdirectory("${FRAMEKIT_SRC_DIR}/FrameKit/Domains")
 
 # Install core + headers
-include(GNUInstallDirs)
-install(TARGETS FrameKit
-  EXPORT FrameKitTargets
-  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/$<CONFIG>
-  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/$<CONFIG>
-  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}/$<CONFIG>
-  INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-install(DIRECTORY "${FRAMEKIT_INCLUDE_DIR}/" DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-
-# Export everything (core + domains)
-# install(EXPORT FrameKitTargets
-#   NAMESPACE FrameKit::
-#   DESTINATION ${CMAKE_INSTALL_PREFIX}/cmake/FrameKit)
+if(FRAMEKIT_IS_TOP_LEVEL)
+  include(GNUInstallDirs)
+  install(TARGETS FrameKit
+    EXPORT FrameKitTargets
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/$<CONFIG>
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/$<CONFIG>
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}/$<CONFIG>
+    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+  install(DIRECTORY "${FRAMEKIT_INCLUDE_DIR}/" DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+  # Export everything (core + domains)
+  # install(EXPORT FrameKitTargets
+  #   NAMESPACE FrameKit::
+  #   DESTINATION ${CMAKE_INSTALL_PREFIX}/cmake/FrameKit)
+endif()
