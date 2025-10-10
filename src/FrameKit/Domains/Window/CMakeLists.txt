@@ -16,7 +16,7 @@ message(STATUS "-------------------------------- FrameKit Window Domain --------
 
 # Window domain API (header-only) and runtime (registry + loader)
 set(FRAMEKIT_WINDOW_DOMAIN_DIR "${FRAMEKIT_SRC_DIR}/FrameKit/Domains/Window")
-include("${CMAKE_SOURCE_DIR}/cmake/FrameKitAddBackend.cmake")
+include("${FRAMEKIT_ROOT_DIR}/cmake/FrameKitAddBackend.cmake")
 
 message(STATUS "FrameKit Window Domain Dir: ${FRAMEKIT_WINDOW_DOMAIN_DIR}")
 message(STATUS "")
