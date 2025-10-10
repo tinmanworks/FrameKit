@@ -39,8 +39,6 @@ set(FRAMEKIT_MEDIAKIT_SOURCES
   ${FRAMEKIT_SRC_DIR}/FrameKit/Core/MediaKit/FFmpeg/FFVideoReader.h
   ${FRAMEKIT_SRC_DIR}/FrameKit/Core/MediaKit/FFmpeg/FFVideoReader.cpp
   ${FRAMEKIT_SRC_DIR}/FrameKit/Core/MediaKit/ImageLoader_Stb.cpp
-  ${FRAMEKIT_SRC_DIR}/FrameKit/Core/MediaKit/VideoReader_FFmpeg.cpp
-  ${FRAMEKIT_SRC_DIR}/FrameKit/Core/MediaKit/Player_FFmpeg.cpp
   ${FRAMEKIT_SRC_DIR}/FrameKit/Core/MediaKit/MediaKit.cpp
 )
 
@@ -51,8 +49,6 @@ if(NOT FK_MEDIA_ENABLE_STB)
 endif()
 if(NOT FK_MEDIA_ENABLE_FFMPEG)
   list(REMOVE_ITEM FRAMEKIT_MEDIAKIT_SOURCES
-        ${FRAMEKIT_SRC_DIR}/FrameKit/Core/MediaKit/VideoReader_FFmpeg.cpp
-        ${FRAMEKIT_SRC_DIR}/FrameKit/Core/MediaKit/Player_FFmpeg.cpp
         ${FRAMEKIT_SRC_DIR}/FrameKit/Core/MediaKit/FFmpeg/FFCommon.h
         ${FRAMEKIT_SRC_DIR}/FrameKit/Core/MediaKit/FFmpeg/FFCommon.cpp
         ${FRAMEKIT_SRC_DIR}/FrameKit/Core/MediaKit/FFmpeg/FFPlayer.h
@@ -97,21 +93,17 @@ message(STATUS "FFMpeg linkage: ${FK_MEDIA_ENABLE_FFMPEG}")
 # ---- FFmpeg linkage (single block) ----
 if(FK_MEDIA_ENABLE_FFMPEG)
   if(MSVC)
-    # find_package(FFMPEG REQUIRED)             # via vcpkg toolchain
-    # target_include_directories(FrameKit PUBLIC ${FFMPEG_INCLUDE_DIRS})
-    # if(FFMPEG_LIBRARY_DIRS)
-    #   target_link_directories(FrameKit PUBLIC ${FFMPEG_LIBRARY_DIRS})
-    # endif()
-    # target_link_libraries(FrameKit PUBLIC ${FFMPEG_LIBRARIES})
-    find_package(FFMPEG REQUIRED)  # vcpkg
     # Do NOT export vcpkg include paths
-    target_include_directories(FrameKit PUBLIC
-      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-      $<INSTALL_INTERFACE:include>
-    )
-    target_link_libraries(FrameKit PUBLIC ${FFMPEG_LIBRARIES})
+    # target_include_directories(FrameKit PUBLIC
+    #   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    #   $<INSTALL_INTERFACE:include>
+    # )
+    message(STATUS "Looking for FFmpeg via vcpkg...")
+    find_package(FFMPEG REQUIRED MODULE)  # vcpkg
+    target_link_libraries(FrameKit PRIVATE ${FFMPEG_LIBRARIES})
     target_include_directories(FrameKit PRIVATE ${FFMPEG_INCLUDE_DIRS})
   else()
+    message(STATUS "Looking for FFmpeg via pkg-config...")
     find_package(PkgConfig QUIET)
     if(PKG_CONFIG_FOUND)
         pkg_check_modules(AVFORMAT   REQUIRED IMPORTED_TARGET libavformat)
@@ -172,6 +164,11 @@ message(STATUS "================================================================
 
 # -------- Domains (Window, Audio, Gfx, …) --------
 add_subdirectory("${FRAMEKIT_SRC_DIR}/FrameKit/Domains")
+
+get_target_property(_ill FrameKit INTERFACE_LINK_LIBRARIES)
+get_target_property(_iinc FrameKit INTERFACE_INCLUDE_DIRECTORIES)
+message(STATUS "INTERFACE_LINK_LIBRARIES='${_ill}'")
+message(STATUS "INTERFACE_INCLUDE_DIRECTORIES='${_iinc}'")
 
 # Install core + headers
 if(FRAMEKIT_IS_TOP_LEVEL)

@@ -13,7 +13,6 @@
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
                 "CMAKE_OUTPUT_DIRECTORY": "${sourceDir}/_result/${presetName}",
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/_install/FrameKit/${presetName}",
-                "BUILD_EXAMPLES": "ON",
                 "FK_MEDIA_ENABLE_STB": "ON",
                 "FK_MEDIA_ENABLE_FFMPEG": "ON"
             }
