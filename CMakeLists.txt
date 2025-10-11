@@ -98,9 +98,10 @@ message(STATUS "============================ FrameKit Configuration Ended ======
 message(STATUS "========================================================================================")
 message(STATUS "")
 message(STATUS "")
-message(STATUS "")
-message(STATUS "=============================== Configuring Example Projects =============================")
+
 if(BUILD_EXAMPLES)
+  message(STATUS "")
+  message(STATUS "=============================== Configuring Example Projects =============================")
   add_subdirectory(Examples)
 endif()
 
