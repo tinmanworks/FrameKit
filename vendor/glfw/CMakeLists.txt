@@ -49,12 +49,14 @@ message(STATUS "================================================================
 # ---- End Third-party: GLFW ----
 
 # Export shim only if it exists
-if(TARGET FrameKitDeps.GLFW)
-  install(TARGETS FrameKitDeps.GLFW
-    EXPORT FrameKitDepsTargets
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/$<CONFIG>
-    LIBRARY  DESTINATION ${CMAKE_INSTALL_LIBDIR}/$<CONFIG>
-    RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR}/$<CONFIG>)
-  install(EXPORT FrameKitDepsTargets
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/FrameKit)
+if (FRAMEKIT_IS_TOP_LEVEL)
+  if(TARGET FrameKitDeps.GLFW)
+    install(TARGETS FrameKitDeps.GLFW
+      EXPORT FrameKitDepsTargets
+      ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/$<CONFIG>
+      LIBRARY  DESTINATION ${CMAKE_INSTALL_LIBDIR}/$<CONFIG>
+      RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR}/$<CONFIG>)
+    install(EXPORT FrameKitDepsTargets
+      DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/FrameKit)
+  endif()
 endif()

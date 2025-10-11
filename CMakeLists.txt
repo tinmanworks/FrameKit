@@ -61,7 +61,7 @@ option(FRAMEKIT_WARNINGS_AS_ERRORS "Treat warnings as errors" OFF)
 option(BUILD_EXAMPLES              "Build the examples" ${FRAMEKIT_IS_TOP_LEVEL})
 
 # -------------------------- Dependency Options ------------------------------
-option(FRAMEKIT_VENDOR_GLFW "Build bundled GLFW instead of finding system GLFW" ON)
+option(FRAMEKIT_VENDOR_GLFW "Build bundled GLFW instead of finding system GLFW" ${FRAMEKIT_IS_TOP_LEVEL})
 
 # -------------------------- Window Backend Options --------------------------
 option(FRAMEKIT_WINDOW_BACKEND_GLFW  "Build GLFW backend"  ON)
@@ -70,7 +70,7 @@ option(FRAMEKIT_WINDOW_BACKEND_COCOA "Build Cocoa backend" ${APPLE})
 option(BUILD_WINDOW_PLUGINS          "Build loadable window plugins" OFF)
 
 # ----------------------------- MediaKit options ------------------------------
-option(FK_MEDIA_ENABLE_STB "Enable stb_image backend" ON)
+option(FK_MEDIA_ENABLE_STB    "Enable stb_image backend" ON)
 option(FK_MEDIA_ENABLE_FFMPEG "Enable FFmpeg backends" ON)
 
 # --------------------------------- Toolchain ---------------------------------
