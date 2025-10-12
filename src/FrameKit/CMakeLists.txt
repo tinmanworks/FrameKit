@@ -78,11 +78,6 @@ message(STATUS "================================================================
 # -------- Domains (Window, Audio, Gfx, …) --------
 add_subdirectory("${FRAMEKIT_SRC_DIR}/FrameKit/Domains")
 
-get_target_property(_ill FrameKit INTERFACE_LINK_LIBRARIES)
-get_target_property(_iinc FrameKit INTERFACE_INCLUDE_DIRECTORIES)
-message(STATUS "INTERFACE_LINK_LIBRARIES='${_ill}'")
-message(STATUS "INTERFACE_INCLUDE_DIRECTORIES='${_iinc}'")
-
 # Install core + headers
 if(FRAMEKIT_IS_TOP_LEVEL)
   include(GNUInstallDirs)
