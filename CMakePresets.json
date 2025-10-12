@@ -55,9 +55,7 @@
                 "value": "x64"
             },
             "cacheVariables": {
-                "CMAKE_CONFIGURATION_TYPES": "Debug;Release",
-                "CMAKE_TOOLCHAIN_FILE": "C:/vcpkg/scripts/buildsystems/vcpkg.cmake",
-                "VCPKG_TARGET_TRIPLET": "x64-windows"
+                "CMAKE_CONFIGURATION_TYPES": "Debug;Release"
             },
             "condition": {
                 "type": "equals",

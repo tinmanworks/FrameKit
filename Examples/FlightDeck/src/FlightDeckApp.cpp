@@ -20,7 +20,7 @@
 #include <FrameKit/Addon/FKHostV1.h>
 #include "FDAExt.h"
 
-#include "VideoLayer.h"
+// #include "VideoLayer.h"
 #include "ImGui/ImGuiLayer.h"
 #include "AddonManagerLayer.h"
 
@@ -70,7 +70,7 @@ namespace FlightDeck {
             // Layers
             m_ImGuiLayer = new ImGuiLayer();
             PushLayer(m_ImGuiLayer);
-            PushLayer(new VideoLayer("DroneVideoPort"));
+            // PushLayer(new VideoLayer("DroneVideoPort"));
 
             // Addon manager layer with host registration lambda
             auto addonsDir = std::filesystem::current_path();

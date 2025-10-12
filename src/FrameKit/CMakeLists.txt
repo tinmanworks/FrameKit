@@ -27,41 +27,10 @@ file(GLOB_RECURSE FRAMEKIT_CORE_HEADERS  CONFIGURE_DEPENDS
   "${FRAMEKIT_SRC_DIR}/FrameKit/Core/*.h" "${FRAMEKIT_SRC_DIR}/FrameKit/Core/*.[hi]pp" "${FRAMEKIT_SRC_DIR}/FrameKit/Core/*.inl"
 )
 
-list(FILTER FRAMEKIT_CORE_SOURCES EXCLUDE REGEX ".*/FrameKit/Core/MediaKit/.*")
-list(FILTER FRAMEKIT_CORE_HEADERS EXCLUDE REGEX ".*/FrameKit/Core/MediaKit/.*")
-
-# MediaKit sources
-set(FRAMEKIT_MEDIAKIT_SOURCES
-  ${FRAMEKIT_SRC_DIR}/FrameKit/Core/MediaKit/FFmpeg/FFCommon.h
-  ${FRAMEKIT_SRC_DIR}/FrameKit/Core/MediaKit/FFmpeg/FFCommon.cpp
-  ${FRAMEKIT_SRC_DIR}/FrameKit/Core/MediaKit/FFmpeg/FFPlayer.h
-  ${FRAMEKIT_SRC_DIR}/FrameKit/Core/MediaKit/FFmpeg/FFPlayer.cpp
-  ${FRAMEKIT_SRC_DIR}/FrameKit/Core/MediaKit/FFmpeg/FFVideoReader.h
-  ${FRAMEKIT_SRC_DIR}/FrameKit/Core/MediaKit/FFmpeg/FFVideoReader.cpp
-  ${FRAMEKIT_SRC_DIR}/FrameKit/Core/MediaKit/ImageLoader_Stb.cpp
-  ${FRAMEKIT_SRC_DIR}/FrameKit/Core/MediaKit/MediaKit.cpp
-)
-
-# Filter by options
-if(NOT FK_MEDIA_ENABLE_STB)
-  list(REMOVE_ITEM FRAMEKIT_MEDIAKIT_SOURCES
-       ${FRAMEKIT_SRC_DIR}/FrameKit/Core/MediaKit/ImageLoader_Stb.cpp)
-endif()
-if(NOT FK_MEDIA_ENABLE_FFMPEG)
-  list(REMOVE_ITEM FRAMEKIT_MEDIAKIT_SOURCES
-        ${FRAMEKIT_SRC_DIR}/FrameKit/Core/MediaKit/FFmpeg/FFCommon.h
-        ${FRAMEKIT_SRC_DIR}/FrameKit/Core/MediaKit/FFmpeg/FFCommon.cpp
-        ${FRAMEKIT_SRC_DIR}/FrameKit/Core/MediaKit/FFmpeg/FFPlayer.h
-        ${FRAMEKIT_SRC_DIR}/FrameKit/Core/MediaKit/FFmpeg/FFPlayer.cpp
-        ${FRAMEKIT_SRC_DIR}/FrameKit/Core/MediaKit/FFmpeg/FFVideoReader.h
-        ${FRAMEKIT_SRC_DIR}/FrameKit/Core/MediaKit/FFmpeg/FFVideoReader.cpp
-  )
-endif()
-
 # IDE filters
 source_group(TREE "${FRAMEKIT_ROOT_DIR}" FILES
   ${FRAMEKIT_CORE_SOURCES} ${FRAMEKIT_CORE_HEADERS}
-  ${FRAMEKIT_PUBLIC_HEADERS} ${FRAMEKIT_MEDIAKIT_SOURCES})
+  ${FRAMEKIT_PUBLIC_HEADERS})
 
 # -------- Target: FrameKit (static) --------
 add_library(FrameKit STATIC
@@ -69,7 +38,6 @@ add_library(FrameKit STATIC
   ${FRAMEKIT_CORE_SOURCES}
   ${FRAMEKIT_PUBLIC_HEADERS})
 add_library(FrameKit::FrameKit ALIAS FrameKit)
-target_sources(FrameKit PRIVATE ${FRAMEKIT_MEDIAKIT_SOURCES})
 set_target_properties(FrameKit PROPERTIES FOLDER "FrameKit" POSITION_INDEPENDENT_CODE ON)
 
 target_include_directories(FrameKit
@@ -77,63 +45,6 @@ target_include_directories(FrameKit
     $<BUILD_INTERFACE:${FRAMEKIT_INCLUDE_DIR}>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
   PRIVATE "${FRAMEKIT_SRC_DIR}")
-
-# stb_image: header-only, keep private
-if(FK_MEDIA_ENABLE_STB)
-  if(EXISTS "${FRAMEKIT_VENDOR_DIR}/stb_image")
-    target_include_directories(FrameKit PRIVATE ${FRAMEKIT_VENDOR_DIR}/stb_image)
-    target_compile_definitions(FrameKit PRIVATE FK_MEDIA_ENABLE_STB=1)
-  else()
-    message(WARNING "FK_MEDIA_ENABLE_STB=ON but ${FRAMEKIT_VENDOR_DIR}/stb_image not found.")
-  endif()
-endif()
-
-message(STATUS "FFMpeg linkage: ${FK_MEDIA_ENABLE_FFMPEG}")
-
-# ---- FFmpeg linkage (single block) ----
-if(FK_MEDIA_ENABLE_FFMPEG)
-  if(MSVC)
-    message(STATUS "Looking for FFmpeg via vcpkg...")
-    find_package(FFmpeg REQUIRED MODULE)
-
-    target_include_directories(FrameKit PRIVATE
-      $<BUILD_INTERFACE:${FFMPEG_INCLUDE_DIRS}>
-    )
-    target_link_libraries(FrameKit PRIVATE
-      $<BUILD_INTERFACE:${FFMPEG_LIBRARIES}>
-    )
-message(STATUS "FFMPEG_INCLUDE_DIRS='${FFMPEG_INCLUDE_DIRS}'")
-message(STATUS "FFMPEG_LIBRARIES='${FFMPEG_LIBRARIES}'")
-  else()
-    message(STATUS "Looking for FFmpeg via pkg-config...")
-    find_package(PkgConfig QUIET)
-    if(PKG_CONFIG_FOUND)
-        pkg_check_modules(AVFORMAT   REQUIRED IMPORTED_TARGET libavformat)
-        pkg_check_modules(AVCODEC    REQUIRED IMPORTED_TARGET libavcodec)
-        pkg_check_modules(AVUTIL     REQUIRED IMPORTED_TARGET libavutil)
-        pkg_check_modules(SWSCALE    REQUIRED IMPORTED_TARGET libswscale)
-        pkg_check_modules(SWRESAMPLE REQUIRED IMPORTED_TARGET libswresample)
-        find_package(Threads REQUIRED)
-        target_link_libraries(FrameKit
-          PUBLIC
-            PkgConfig::AVFORMAT
-            PkgConfig::AVCODEC
-            PkgConfig::AVUTIL
-            PkgConfig::SWSCALE
-            PkgConfig::SWRESAMPLE
-          PRIVATE
-            Threads::Threads m dl
-        )
-    else()
-      message(WARNING "pkg-config not found; FFmpeg disabled on this platform.")
-      set(FK_MEDIA_ENABLE_FFMPEG OFF)
-    endif()
-  endif()
-
-  if(FK_MEDIA_ENABLE_FFMPEG)
-    target_compile_definitions(FrameKit PRIVATE FK_MEDIA_ENABLE_FFMPEG=1)
-  endif()
-endif()
 
 # Common compile options
 target_compile_features(FrameKit PUBLIC cxx_std_20)

@@ -15,7 +15,7 @@
 #include <FrameKit/Window.h>
 
 #include "DemoLayer.h"
-#include "VideoLayer.h"
+// #include "VideoLayer.h"
 #include "ImGui/ImGuiLayer.h"
 
 
@@ -56,7 +56,7 @@ namespace SandBox {
             m_ImGuiLayer = new ImGuiLayer();
             PushLayer(m_ImGuiLayer);
 
-            PushLayer(new VideoLayer("DroneVideoPort"));
+            // PushLayer(new VideoLayer("DroneVideoPort"));
             PushLayer(new DemoLayer("DemoLayer"));
 
             FK_INFO("SandBox Application initialized");
