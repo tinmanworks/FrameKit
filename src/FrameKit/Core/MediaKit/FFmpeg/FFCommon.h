@@ -10,11 +10,11 @@
 // =============================================================================
 #pragma once
 extern "C" {
-#include <libavformat/avformat.h>
-#include <libavcodec/avcodec.h>
-#include <libswscale/swscale.h>
-#include <libavutil/pixdesc.h>
-#include <libavutil/channel_layout.h>
+#include "libavformat/avformat.h"
+#include "libavcodec/avcodec.h"
+#include "libswscale/swscale.h"
+#include "libavutil/pixdesc.h"
+#include "libavutil/channel_layout.h"
 }
 
 #include "FrameKit/MediaKit/MediaKit.h"
