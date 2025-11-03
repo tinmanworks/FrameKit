@@ -35,11 +35,12 @@ namespace FrameKit {
     using GetInterfaceFn = void* (FK_CDECL*)(const char*, uint32_t) noexcept;
 
     struct LoadedAddon {
-        fk_lib_handle_t  handle{};
-        FK_AddonInfo     info{};
-        GetInterfaceFn   addon_get{};        // addon's GetInterface
-        void           (*addon_shutdown)() noexcept {};
-        const FK_AddonV1* addon_v1{};        // cached lifecycle iface
+        std::filesystem::path path;          // canonical load path
+        fk_lib_handle_t       handle{};      // OS library handle
+        FK_AddonInfo          info{};
+        GetInterfaceFn        addon_get{};   // addon's GetInterface
+        void                (*addon_shutdown)() noexcept {}; // optional ShutdownAddon()
+        const FK_AddonV1*     addon_v1{};    // lifecycle iface
     };
 
     struct IHostGetProvider {

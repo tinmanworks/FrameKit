@@ -41,7 +41,7 @@ namespace FrameKit {
 #endif
     }
 
-    // context-aware bridge: routes to this loader's provider
+    // Context bridge for SetHostGetterEx
     static void* FK_CDECL HostGetCtx(void* ctx, const char* id, uint32_t min_ver) noexcept {
         auto* prov = static_cast<IHostGetProvider*>(ctx);
         return prov ? prov->HostGet(id, min_ver) : nullptr;
@@ -55,26 +55,30 @@ namespace FrameKit {
         catch (...) { return std::nullopt; }
 
         auto get_info = reinterpret_cast<void (FK_CDECL*)(FK_AddonInfo*) noexcept>(fk_get_symbol(h, "GetAddonInfo"));
-        auto set_hostex = reinterpret_cast<void (FK_CDECL*)(FK_GetInterfaceCtxFn, void*) noexcept>(fk_get_symbol(h, "SetHostGetterEx"));
+        auto set_host = reinterpret_cast<void (FK_CDECL*)(FK_GetInterfaceCtxFn, void*) noexcept>(fk_get_symbol(h, "SetHostGetterEx"));
         auto get_iface = reinterpret_cast<void* (FK_CDECL*)(const char*, uint32_t) noexcept>(fk_get_symbol(h, "GetInterface"));
         auto shut_fn = reinterpret_cast<void (FK_CDECL*)(void) noexcept>(fk_get_symbol(h, "ShutdownAddon"));
 
-        if (!get_info || !set_hostex || !get_iface || !shut_fn) { close_library(h); return std::nullopt; }
+        if (!get_info || !set_host || !get_iface || !shut_fn) { close_library(h); return std::nullopt; }
 
         FK_AddonInfo info{}; get_info(&info);
         if (info.abi_major != 1) { close_library(h); return std::nullopt; }
 
-        // bind host getter with this manager's provider as context
-        set_hostex(&HostGetCtx, &host_provider_);
+        // Bind host getter with this manager as context
+        set_host(&HostGetCtx, &host_provider_);
 
-        // pull addon lifecycle
-        auto* a1 = (const FK_AddonV1*)get_iface(FK_IFACE_ADDON_V1, 1);
+        // Pull lifecycle iface
+        auto* a1 = static_cast<const FK_AddonV1*>(get_iface(FK_IFACE_ADDON_V1, 1));
         if (!a1 || a1->size < sizeof(FK_AddonV1) || a1->version < 1) { close_library(h); return std::nullopt; }
 
         try { if (a1->Initialize) a1->Initialize(); }
         catch (...) { close_library(h); return std::nullopt; }
 
         LoadedAddon out{};
+        // Canonicalize the path for stable identity
+        std::error_code ec;
+        out.path   = std::filesystem::weakly_canonical(lib, ec);
+        if (ec) out.path = lib;
         out.handle = h;
         out.info = info;
         out.addon_get = get_iface;
@@ -84,10 +88,10 @@ namespace FrameKit {
     }
 
     void AddonLoader::Unload(LoadedAddon& a) noexcept {
-        if (a.addon_v1 && a.addon_v1->Shutdown) { try { a.addon_v1->Shutdown(); } catch (...) {} }
-        if (a.addon_shutdown) { try { a.addon_shutdown(); } catch (...) {} }
+        try { if (a.addon_v1 && a.addon_v1->Shutdown) a.addon_v1->Shutdown(); } catch (...) {}
+        try { if (a.addon_shutdown) a.addon_shutdown(); } catch (...) {}
         close_library(a.handle);
-        a = {};
+        a = {}; // poison
     }
 
 } // namespace FrameKit

@@ -108,26 +108,26 @@ endif()
 
 # ------------------------------ Package Config -------------------------------
 if(FRAMEKIT_IS_TOP_LEVEL)
-  include(CMakePackageConfigHelpers)
-  # Config file that sets up imported target namespace
-  set(FRAMEKIT_CONFIG_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}/cmake/FrameKit")
+  # include(CMakePackageConfigHelpers)
+  # # Config file that sets up imported target namespace
+  # set(FRAMEKIT_CONFIG_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}/cmake/FrameKit")
 
-  install(EXPORT FrameKitTargets
-    NAMESPACE FrameKit::
-    DESTINATION "${FRAMEKIT_CONFIG_INSTALL_DIR}")
+  # install(EXPORT FrameKitTargets
+  #   NAMESPACE FrameKit::
+  #   DESTINATION "${FRAMEKIT_CONFIG_INSTALL_DIR}")
 
-  configure_package_config_file(
-    "${CMAKE_CURRENT_LIST_DIR}/cmake/FrameKitConfig.cmake.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/FrameKitConfig.cmake"
-    INSTALL_DESTINATION "${FRAMEKIT_CONFIG_INSTALL_DIR}")
+  # configure_package_config_file(
+  #   "${CMAKE_CURRENT_LIST_DIR}/cmake/FrameKitConfig.cmake.in"
+  #   "${CMAKE_CURRENT_BINARY_DIR}/FrameKitConfig.cmake"
+  #   INSTALL_DESTINATION "${FRAMEKIT_CONFIG_INSTALL_DIR}")
 
-  write_basic_package_version_file(
-    "${CMAKE_CURRENT_BINARY_DIR}/FrameKitConfigVersion.cmake"
-    VERSION ${PROJECT_VERSION}
-    COMPATIBILITY SameMajorVersion)
+  # write_basic_package_version_file(
+  #   "${CMAKE_CURRENT_BINARY_DIR}/FrameKitConfigVersion.cmake"
+  #   VERSION ${PROJECT_VERSION}
+  #   COMPATIBILITY SameMajorVersion)
 
-  install(FILES
-    "${CMAKE_CURRENT_BINARY_DIR}/FrameKitConfig.cmake"
-    "${CMAKE_CURRENT_BINARY_DIR}/FrameKitConfigVersion.cmake"
-    DESTINATION "${FRAMEKIT_CONFIG_INSTALL_DIR}")
+  # install(FILES
+  #   "${CMAKE_CURRENT_BINARY_DIR}/FrameKitConfig.cmake"
+  #   "${CMAKE_CURRENT_BINARY_DIR}/FrameKitConfigVersion.cmake"
+  #   DESTINATION "${FRAMEKIT_CONFIG_INSTALL_DIR}")
 endif()
