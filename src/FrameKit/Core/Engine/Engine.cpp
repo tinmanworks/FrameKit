@@ -37,6 +37,8 @@ namespace FrameKit {
         }
         FK_CORE_TRACE("Host.Init done");
 
+        host->StartAsyncWorker(app);
+
         std::uint64_t frames = 0;
         while (host->Tick(app)) {
             ++frames;
@@ -44,9 +46,13 @@ namespace FrameKit {
         }
         FK_CORE_INFO("Host loop exit: frames={}", frames);
 
+		host->StopAsyncWorker(app);
+
         app.Shutdown();
         FK_CORE_INFO("Engine stop with code 0");
         return 0;
     }
+
+
 
 } // namespace FrameKit

@@ -54,6 +54,7 @@ namespace FrameKit
 		virtual void OnFrameEnd() {}
 
 		// app behavior
+		virtual void OnCyclic() {}								        // executed in async thread
 		virtual bool OnUpdate(Timestep /*ts*/) { return true; }			// return false to close app
 		virtual void OnRender() {}										// only called in windowed mode
 		virtual void OnEvent(Event& /*e*/) {}							// executed after layers; mark handled to stop propagation

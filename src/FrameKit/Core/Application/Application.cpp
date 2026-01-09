@@ -15,6 +15,10 @@
 #include "FrameKit/Debug/Log.h"
 
 namespace FrameKit {
+	void Application::OnCyclic() {
+		std::scoped_lock lock(m_LayerStackMutex);
+	}
+
 	bool Application::OnUpdate(Timestep ts) {
 		std::scoped_lock<std::mutex> lock(m_LayerStackMutex);
 

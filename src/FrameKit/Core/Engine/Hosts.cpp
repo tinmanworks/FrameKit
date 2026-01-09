@@ -2,7 +2,6 @@
 // Project      : FrameKit
 // File         : src/FrameKit/Engine/Host.cpp
 // Author       : George Gil
-// Created      : 2025-09-07
 // Updated      : 2025-09-18
 // License      : Dual Licensed: GPLv3 or Proprietary (c) 2025 George Gil
 // Description  :
@@ -23,6 +22,7 @@
 #include <algorithm>
 #include <chrono>
 #include <thread>
+#include <atomic>
 #include <memory>
 #include <iostream>
 #if __cpp_lib_format >= 202106L
@@ -79,18 +79,30 @@ namespace FrameKit {
         WindowPtr win_{ nullptr, &NoopDelete };
         CommonLoop loop_;
         HostStats stats_{};
+
+        std::atomic<bool> running_{ false };
+        std::thread worker_;
+
+        void StopWorkerIfRunning() noexcept {
+            running_.store(false, std::memory_order_release);
+            if (worker_.joinable()) {
+                worker_.join();
+            }
+        }
+
     public:
+        ~WindowedHost() override {
+            StopWorkerIfRunning();
+        }
+
         bool Init(ApplicationBase& app) override {
             FK_PROFILE_FUNCTION();
             const auto& spec = app.GetSpec();
-            loop_.SetupTarget(0.0); // uncapped for now; wire max FPS from spec later
 
-            //RegisterBuiltInWindowBackends();
-			// optionally load window backends from plugins
-            // LoadWindowPluginsFrom(std::filesystem::path(spec.WorkingDirectory) / "plugins");
+            loop_.SetupTarget(0.0); // TODO: spec-controlled max FPS
 
+            // Log backends
             auto v = ListWindowBackends();
-
             if (v.empty()) {
                 FK_CORE_WARN("Window Backends: none registered");
             }
@@ -102,6 +114,7 @@ namespace FrameKit {
                 FK_CORE_INFO("Requested API: {}", ToString(spec.WinSettings.api));
             }
 
+            // Window desc
             WindowDesc wd;
             wd.title = spec.WinSettings.title.empty() ? spec.Name : spec.WinSettings.title;
             wd.width = spec.WinSettings.width ? spec.WinSettings.width : 1280;
@@ -121,26 +134,51 @@ namespace FrameKit {
                 spec.GfxSettings.gl.core ? "true" : "false",
                 spec.GfxSettings.gl.debug ? "true" : "false",
                 spec.GfxSettings.gl.swapInterval ? "true" : "false");
-                
-            // pick best available backend
+
+            // Create window
             WindowPtr w = CreateWindow(spec.WinSettings.api, wd, &spec.GfxSettings);
             if (!w) {
                 FK_CORE_ERROR("CreateWindow failed for api={}", ToString(spec.WinSettings.api));
                 return false;
             }
+
             win_ = std::move(w);
             BindWindowToGlobalEvents(*win_);
             FK_CORE_TRACE("Window created and event bridge bound");
 
             const bool ok = app.Init();
-            if (!ok) {
-                FK_CORE_ERROR("Application Init failed");
-            }
-            else {
-                FK_CORE_INFO("Application Init ok");
-            }
+            if (!ok) FK_CORE_ERROR("Application Init failed");
+            else     FK_CORE_INFO("Application Init ok");
             return ok;
         }
+
+        bool StartAsyncWorker(ApplicationBase& app) override {
+            FK_PROFILE_FUNCTION();
+
+            if (worker_.joinable()) return true;
+
+            running_.store(true, std::memory_order_release);
+            worker_ = std::thread([this, &app] {
+                FK_PROFILE_FUNCTION();
+                FK_CORE_INFO("Asynchronous worker started");
+
+                while (running_.load(std::memory_order_acquire)) {
+                    // Async thread function
+                    app.OnCyclic();
+                    Sleep(Timestep(5)); 
+                }
+
+                FK_CORE_INFO("Asynchronous worker stopping");
+                });
+
+            return true;
+        }
+
+        void StopAsyncWorker(ApplicationBase& /*app*/) override {
+            FK_PROFILE_FUNCTION();
+            StopWorkerIfRunning();
+        }
+
 
         bool Tick(ApplicationBase& app) override {
             FK_PROFILE_FUNCTION();
@@ -190,6 +228,7 @@ namespace FrameKit {
         }
 
         void SignalClose() override {
+			FK_PROFILE_FUNCTION();
             FK_CORE_INFO("SignalClose");
             loop_.closing = true;
             if (win_) win_->requestClose();
@@ -201,13 +240,56 @@ namespace FrameKit {
     class HeadlessHost final : public IAppHost {
         CommonLoop loop_;
         HostStats stats_{};
+
+        std::atomic<bool> running_{ false };
+        std::thread       worker_{};
+
+        void StopWorkerIfRunning() noexcept {
+            running_.store(false, std::memory_order_release);
+            if (worker_.joinable()) {
+                worker_.join();
+            }
+        }
+
     public:
+        ~HeadlessHost() override {
+            StopWorkerIfRunning();
+        }
+
         bool Init(ApplicationBase& app) override {
+            FK_PROFILE_FUNCTION();
             loop_.SetupTarget(0.0);
+
             const bool ok = app.Init();
             if (!ok) FK_CORE_ERROR("Headless: Application Init failed");
             else     FK_CORE_INFO("Headless: Application Init ok");
             return ok;
+        }
+
+        bool StartAsyncWorker(ApplicationBase& app) override {
+            FK_PROFILE_FUNCTION();
+
+            if (worker_.joinable()) return true;
+
+            running_.store(true, std::memory_order_release);
+            worker_ = std::thread([this, &app] {
+                FK_PROFILE_FUNCTION();
+                FK_CORE_INFO("Headless OnCycle worker started");
+
+                while (running_.load(std::memory_order_acquire)) {
+                    app.OnCyclic();
+                    Sleep(Timestep(5));
+                }
+
+                FK_CORE_INFO("Headless OnCycle worker stopping");
+                });
+
+            return true;
+        }
+
+        void StopAsyncWorker(ApplicationBase& /*app*/) override {
+            FK_PROFILE_FUNCTION();
+            StopWorkerIfRunning();
         }
 
         bool Tick(ApplicationBase& app) override {

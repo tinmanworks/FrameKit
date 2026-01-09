@@ -33,6 +33,7 @@ namespace FrameKit {
 		bool OnUpdate(Timestep /*ts*/) override;
 		void OnRender() override;// only called in windowed mode
 		void OnEvent(Event& /*e*/) override;
+		void OnCyclic() override;								        // executed in async thread
 
 		// For more advanced usage, override these hooks as needed:
 		// void OnBeforePoll() override {}
