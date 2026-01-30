@@ -4,16 +4,7 @@
 #include <span>
 #include <vector>
 #include <chrono>
-
-#if defined(_WIN32)
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif
-#include <winsock2.h>   // htonl/ntohl
-#include <ws2tcpip.h>
-#else
-#include <arpa/inet.h>  // htonl/ntohl
-#endif
+#include <bit>   // std::endian
 
 namespace FrameKit::Net {
 
@@ -22,17 +13,48 @@ namespace FrameKit::Net {
         return (uint64_t)duration_cast<microseconds>(steady_clock::now().time_since_epoch()).count();
     }
 
-    inline uint32_t Hton32(uint32_t x) { return htonl(x); }
-    inline uint32_t Ntoh32(uint32_t x) { return ntohl(x); }
-
-    // Portable 64-bit host/network conversion using htonl
-    inline uint64_t Hton64(uint64_t x) {
-        uint32_t hi = (uint32_t)(x >> 32);
-        uint32_t lo = (uint32_t)(x & 0xFFFFFFFFULL);
-        return (uint64_t)htonl(lo) << 32 | (uint64_t)htonl(hi);
+    // ---- endian helpers (no winsock dependency) ----
+    constexpr inline uint16_t BSwap16(uint16_t x) {
+        return (uint16_t)((x << 8) | (x >> 8));
     }
-    inline uint64_t Ntoh64(uint64_t x) { return Hton64(x); }
 
+    constexpr inline uint32_t BSwap32(uint32_t x) {
+        return ((x & 0x000000FFu) << 24) |
+            ((x & 0x0000FF00u) << 8) |
+            ((x & 0x00FF0000u) >> 8) |
+            ((x & 0xFF000000u) >> 24);
+    }
+
+    constexpr inline uint64_t BSwap64(uint64_t x) {
+        return ((x & 0x00000000000000FFull) << 56) |
+            ((x & 0x000000000000FF00ull) << 40) |
+            ((x & 0x0000000000FF0000ull) << 24) |
+            ((x & 0x00000000FF000000ull) << 8) |
+            ((x & 0x000000FF00000000ull) >> 8) |
+            ((x & 0x0000FF0000000000ull) >> 24) |
+            ((x & 0x00FF000000000000ull) >> 40) |
+            ((x & 0xFF00000000000000ull) >> 56);
+    }
+
+    constexpr inline uint32_t Hton32(uint32_t x) {
+        if constexpr (std::endian::native == std::endian::little) return BSwap32(x);
+        else return x;
+    }
+    constexpr inline uint32_t Ntoh32(uint32_t x) {
+        if constexpr (std::endian::native == std::endian::little) return BSwap32(x);
+        else return x;
+    }
+
+    constexpr inline uint64_t Hton64(uint64_t x) {
+        if constexpr (std::endian::native == std::endian::little) return BSwap64(x);
+        else return x;
+    }
+    constexpr inline uint64_t Ntoh64(uint64_t x) {
+        if constexpr (std::endian::native == std::endian::little) return BSwap64(x);
+        else return x;
+    }
+
+    // ---- message header ----
 #pragma pack(push, 1)
     struct MsgHeader {
         uint8_t  type;
