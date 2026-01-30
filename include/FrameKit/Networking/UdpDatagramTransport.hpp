@@ -1,30 +1,31 @@
 #pragma once
-#include "DatagramTransport.hpp"
+#include "FrameKit/Networking/Networking.hpp"
 
 namespace FrameKit::Net {
 
-// Forward-declared public type to let apps construct it if they want,
-// but implementation is in src/Core/FrameKit/Networking.
-class UdpDatagramTransport final : public IDatagramTransport {
-public:
-  UdpDatagramTransport();
-  ~UdpDatagramTransport() override;
+	class UdpDatagramTransport final : public IDatagramTransport {
+	public:
+		UdpDatagramTransport();
+		~UdpDatagramTransport() override;
 
-  // Optional configuration
-  NetErr Open();
-  NetErr SetNonBlocking(bool enabled);
-  NetErr SetBroadcast(bool enabled);
-  NetErr SetReuseAddr(bool enabled);
+		NetErr Open();
+		NetErr SetNonBlocking(bool enabled);
+		NetErr SetReuseAddr(bool enabled);
 
-  bool IsOpen() const override;
+		// Dual-stack control:
+		// false = accept IPv4-mapped addresses on the IPv6 socket
+		NetErr SetIPv6Only(bool v6only);
 
-  NetErr Bind(const IPv4Endpoint& local) override;
-  NetErr SendTo(const IPv4Endpoint& to, ConstByteSpan bytes) override;
-  NetErr RecvFrom(ByteSpan out_buffer, RecvFrom& out) override;
-  NetErr Close() override;
+		bool IsOpen() const override;
 
-private:
-  void* impl_ = nullptr; // pImpl to avoid exposing platform headers in public includes
-};
+		NetErr Bind(const Endpoint& local) override;
+		NetErr SendTo(const Endpoint& to, ConstByteSpan bytes) override;
+		NetErr RecvFrom(ByteSpan out_buffer, RecvFromInfo& out) override;
+
+		NetErr Close() override;
+
+	private:
+		void* impl_ = nullptr;
+	};
 
 } // namespace FrameKit::Net
