@@ -50,4 +50,16 @@ namespace FrameKit {
 		FK_CORE_TRACE("Overlay attached: {}", layer->GetName());
 	}
 
+	void ApplicationBase::RegisterService(uint64_t id, uint32_t version, void* service) {
+        m_ServiceRegistry.Register(id, version, service);
+    }
+
+    void* ApplicationBase::GetService(uint64_t id, uint32_t version) const {
+        return m_ServiceRegistry.Get(id, version);
+    }
+
+    void ApplicationBase::UnregisterService(uint64_t id, uint32_t version) {
+        m_ServiceRegistry.Unregister(id, version);
+    }
+	
 } // namespace FrameKit

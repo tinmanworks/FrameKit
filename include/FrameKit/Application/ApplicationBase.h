@@ -15,6 +15,7 @@
 
 #include "FrameKit/Application/AppSpec.h"
 #include "FrameKit/Utilities/Time.h"
+#include "FrameKit/Application/ServiceRegistry.h"
 
 #include <mutex>
 
@@ -63,12 +64,18 @@ namespace FrameKit
 		// --- Runtime layer management ---
 		void PushLayer(Layer* layer);
 		void PushOverlay(Layer* layer);
-
+	
+		// Service registry API (non-template)
+		void RegisterService(uint64_t id, uint32_t version, void* service);
+		void* GetService(uint64_t id, uint32_t version) const;
+		void UnregisterService(uint64_t id, uint32_t version);
+		
 	protected:
 		ApplicationSpecification	m_Specification;
 		LayerStack*					m_LayerStack = nullptr; 
 		std::mutex					m_LayerStackMutex;
 
 	private: 
+		ServiceRegistry				m_ServiceRegistry;
 	};
 }
