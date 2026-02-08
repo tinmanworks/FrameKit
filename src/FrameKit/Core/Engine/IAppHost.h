@@ -26,8 +26,8 @@ namespace FrameKit {
         virtual ~IAppHost() = default;
 		virtual bool Init(ApplicationBase& app) = 0;    // calls app.Init(); false => exit
 		virtual bool Tick(ApplicationBase& app) = 0;    // one iteration of run loop; false => exit
-		virtual bool StartAsyncWorker(ApplicationBase& app) { return true; } // optional async thread
-        virtual void StopAsyncWorker(ApplicationBase& app) {}
+		virtual bool StartAsyncWorker(ApplicationBase&) { return true; } // optional async thread
+        virtual void StopAsyncWorker(ApplicationBase&) {}
         virtual void SignalClose() = 0;
         virtual HostStats Stats() const = 0;
     };
