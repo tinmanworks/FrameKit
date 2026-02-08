@@ -9,6 +9,7 @@ namespace FrameKit::Net {
 		~UdpDatagramTransport() override;
 
 		NetErr Open();
+		NetErr SetBroadcast(bool enabled);
 		NetErr SetNonBlocking(bool enabled);
 		NetErr SetReuseAddr(bool enabled);
 

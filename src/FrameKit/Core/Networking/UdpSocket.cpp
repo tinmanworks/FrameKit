@@ -167,6 +167,34 @@ namespace FrameKit::Net {
         return NetErr::Ok;
     }
 
+    NetErr UdpSocket::SetBroadcast(bool enabled) {
+        if (!IsOpen()) return NetErr::NotOpen;
+
+#if defined(_WIN32)
+        BOOL opt = enabled ? TRUE : FALSE;
+        const int r = ::setsockopt(
+            s_,
+            SOL_SOCKET,
+            SO_BROADCAST,
+            reinterpret_cast<const char*>(&opt),
+            sizeof(opt)
+        );
+        if (r != 0) return NetErr::Fail;
+#else
+        int opt = enabled ? 1 : 0;
+        const int r = ::setsockopt(
+            s_,
+            SOL_SOCKET,
+            SO_BROADCAST,
+            &opt,
+            sizeof(opt)
+        );
+        if (r != 0) return NetErr::Fail;
+#endif
+
+        return NetErr::Ok;
+    }
+
     NetErr UdpSocket::SetNonBlocking(bool enabled) {
         if (!IsOpen()) return NetErr::NotOpen;
 #if defined(_WIN32)

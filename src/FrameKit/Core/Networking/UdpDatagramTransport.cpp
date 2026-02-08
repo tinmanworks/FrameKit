@@ -28,6 +28,15 @@ namespace FrameKit::Net {
         return I(impl_)->sock.Open();
     }
 
+    NetErr UdpDatagramTransport::SetBroadcast(bool enabled) {
+        if (!impl_) return NetErr::Fail;
+        if (!I(impl_)->sock.IsOpen()) {
+            const auto e = Open();
+            if (e != NetErr::Ok) return e;
+        }
+        return I(impl_)->sock.SetBroadcast(enabled);
+    }
+
     NetErr UdpDatagramTransport::SetNonBlocking(bool enabled) {
         if (!impl_) return NetErr::Fail;
         if (!I(impl_)->sock.IsOpen()) {

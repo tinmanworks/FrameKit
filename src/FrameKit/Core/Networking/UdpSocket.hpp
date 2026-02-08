@@ -33,6 +33,7 @@ namespace FrameKit::Net {
 		bool IsOpen() const override;
 		NetErr Close() override;
 
+		NetErr SetBroadcast(bool enabled);
 		NetErr SetNonBlocking(bool enabled) override;
 		NetErr SetReuseAddr(bool enabled) override;
 
