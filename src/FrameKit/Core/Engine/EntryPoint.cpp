@@ -10,6 +10,7 @@
 //   runs its lifecycle, and handles cleanup.
 // =============================================================================
 #include "FrameKit/Application/Application.h"
+#include "FrameKit/Application/EntryHooks.h"
 #include "FrameKit/Core/Engine/Engine.h"
 #include "FrameKit/Debug/Instrumentor.h"
 #include "FrameKit/Debug/Log.h"
@@ -23,6 +24,10 @@ extern FrameKit::Application* FrameKit::CreateApplication(FrameKit::ApplicationC
 int main(int argc, char** argv) {
     // TODO: allow configuring log level via command line args or env var
     // TODO: profiling name via app name or env var
+    if (auto* hook = FrameKit::GetPreMainHook()) {
+        hook(argc, argv);
+    }
+
     FK_PROFILE_BEGIN_SESSION("Startup", "FrameKitProfile.json");
 
     FrameKit::Log::Init(); // core="FrameKit", client="Application"
