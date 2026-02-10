@@ -17,6 +17,15 @@
 #include <string_view>
 #include <vector>
 
+#ifdef _WIN32
+#ifdef CreateWindowA
+#undef CreateWindowA
+#endif
+#ifdef CreateWindowW
+#undef CreateWindowW
+#endif
+#endif
+
 namespace FrameKit {
 
     struct WindowDesc {
