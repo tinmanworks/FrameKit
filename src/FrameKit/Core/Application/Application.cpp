@@ -17,6 +17,24 @@
 namespace FrameKit {
 	void Application::OnCyclic() {
 		std::scoped_lock lock(m_LayerStackMutex);
+
+		if (!m_LayerStack) {
+			FK_CORE_WARN("OnCycle skipped: LayerStack is null");
+		}
+
+		size_t idx = 0;
+		FK_CORE_TRACE("OnCycle begin: layers={}", m_LayerStack->Size());
+
+		for (Layer* layer : *m_LayerStack) {
+			if (!layer) {
+				FK_CORE_WARN("OnCycle: layer[{}] is null", idx++);
+				continue;
+			}
+			layer->OnAsyncUpdate();
+			FK_CORE_TRACE("OnCycle: layer[{}] updated", idx++);
+		}
+
+		FK_CORE_TRACE("OnCycle end");
 	}
 
 	bool Application::OnUpdate(Timestep ts) {
